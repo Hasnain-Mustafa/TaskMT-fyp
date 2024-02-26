@@ -39,15 +39,15 @@ const handleLogin = (token) => {
 
   return (
     
-    <div className=" xs:mx-8 sm:mx-24 md:mx-21 lg:mx-24"> {/* Centering the main div */}
-      <div className="xs:mx-8 sm:mx-24 md:mx-21 lg:mx-24">
+    <div className=" mx-auto"> {/* Centering the main div */}
+     
         <header className="mt-8 ">
           <Navbar />
           <Hero />
         </header>
         {isSignUpModalOpen && <SignUpModal closeSignUpFn={closeSignUpModal} />}
         {isLoginModalOpen && <LoginModal onLogin={handleLogin} closeModalFn={closeLoginModal} />}
-        </div>
+        
     </div>
   );
 }

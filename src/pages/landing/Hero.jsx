@@ -14,8 +14,8 @@ const Hero = () => {
   };
   return (
   
-      <section className="mt-[3.4rem]">
-        <div className="flex flex-col md:items-center justify-between md:flex-row">
+    <section className="mt-[3.4rem] flex justify-center">
+        <div className="flex flex-col gap-40 md:items-center justify-between md:flex-row">
           <div className="flex flex-col items-start "> {/* Adjusted space-y */}
             <h1 className="text-4xl font-semibold mb-4">
               Task Management <br /> & Collaboration <br /> Made Easy
@@ -32,7 +32,7 @@ const Hero = () => {
             </button>
             {isSignUpOpen && <SignUpModal closeSignUpFn={closeSignUp} />}
           </div>
-          <img className="h-[27rem] w-[27rem] ml-4 md:ml-8" src={HeroImg} alt="" /> {/* Adjusted margin */}
+          <img className="h-[27rem] w-[27rem] ml-4" src={HeroImg} alt="" /> {/* Adjusted margin */}
         </div>
       </section>
     );
