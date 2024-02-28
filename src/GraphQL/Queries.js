@@ -5,3 +5,14 @@ export const GET_USER_TOKEN = gql`
     generateUserToken(email: $email, password: $password)
   }
 `;
+export const GET_CURRENT_USER=gql `
+query GetCurrentLoggedInUser {
+  getCurrentLoggedInUser {
+    id
+    email
+    name
+    isManager
+  }
+}
+
+`;

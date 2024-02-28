@@ -14,7 +14,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="flex justify-between items-center">
+    <nav className="flex justify-between items-center mx-40">
       <img src={Logo} alt="" />
       <div className="flex gap-4">
         <button

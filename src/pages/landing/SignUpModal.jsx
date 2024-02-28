@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { MdCancel } from 'react-icons/md';
 import { SIGN_UP_MUTATION } from "../../GraphQL/Mutations";
 import { useMutation } from "@apollo/client";
-
+import { useAuth } from '../../contexts/AuthContext';
 const SignUpModal = ({ closeSignUpFn }) => {
 
   const signUpSchema = z
@@ -36,29 +36,51 @@ const SignUpModal = ({ closeSignUpFn }) => {
 
   const [isProjectManager, setIsProjectManager] = useState(false);
   const [signUpUser, { error }] = useMutation(SIGN_UP_MUTATION);
-
+  const { user, setUser } = useAuth();
+  
 
     
-  const submitData = (data) => {
-    
-    const variables = {
-      email: data.email,
-      name: data.name,
-      password: data.password,
-      isManager: isProjectManager
-    };
-  
-    console.log(variables); // Log the variables object
-  
-    signUpUser({
-      variables: variables,
+  const submitData = async (data) => {
+    try {
+      // Create user in your database
+      const variables = {
+        email: data.email,
+        name: data.name,
+        password: data.password,
+        isManager: isProjectManager
+      };
+      await signUpUser({ variables });
+
+      // Create user in ChatEngine
+      const chatEngineUser = {
+        username: data.name,
+        secret: data.password,
+        // Add any additional fields as needed (e.g., first_name, last_name, custom_json)
+      };
+      const response = await fetch('https://api.chatengine.io/users/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'PRIVATE-KEY': '41c892f9-0d11-4cd4-94b0-e2683e92dc13' // Replace with your actual private key
+      },
+      body: JSON.stringify(chatEngineUser)
     });
 
-    if (error) {
-      console.log(error);
+    if (!response.ok) {
+      throw new Error('Failed to create user in ChatEngine');
     }
-  };
-  
+
+    const responseData = await response.json(); // Parse response body as JSON
+    // Log the user data returned from ChatEngine
+setUser(responseData)
+
+    // Handle success (redirect, show success message, etc.)
+  } catch (error) {
+    console.error('Error signing up:', error);
+    // Handle error (show error message, allow user to retry, etc.)
+  }
+}
+
 
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-80 flex items-center justify-center">

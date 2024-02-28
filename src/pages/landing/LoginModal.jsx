@@ -1,19 +1,22 @@
-import React from 'react';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { MdCancel } from 'react-icons/md'; // Importing cancel icon from Material Icons
-import { useLazyQuery, gql } from "@apollo/client";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { MdCancel } from "react-icons/md";
+import { useLazyQuery } from "@apollo/client";
 import { GET_USER_TOKEN } from "../../GraphQL/Queries";
 
+import { useAuth } from '../../contexts/AuthContext';
 const LoginModal = (props) => {
-  const {closeModalFn,onLogin} =props;
+ 
+  const { closeModalFn,onAuth } = props;
+  const { login } = useAuth();
+
   const LoginSchema = z.object({
+    username: z.string().min(3).max(20),
     email: z.string().email(),
-    password: z
-      .string({ required_error: 'Password is required' })
-      .min(8, { message: 'Password must be at least 8 characters long' })
-      .max(20, { message: 'Password cannot be more than 20 characters long' }),
+    password: z.string().min(8).max(20),
   });
 
   const {
@@ -23,37 +26,65 @@ const LoginModal = (props) => {
   } = useForm({
     resolver: zodResolver(LoginSchema),
   });
-  const [generateUserToken,{ data, loading, error }] = useLazyQuery(GET_USER_TOKEN) 
 
-  const submitData = (FormData) => {
-    const variables = {
-      email: FormData.email,
-      password: FormData.password
-    };
-  
-    console.log(variables); // Log the variables object
-  
-    generateUserToken({
-      variables: variables,
-    });
-  
-  
-  // Move useEffect inside the component function
-  
-    // Handle response from server
-    if (error) {
-      console.log(error);
-    }
-    if (data ) {
-      const token = data.generateUserToken; // Assuming this is how you get the token from the response
-      console.log('Received token:', token); // Log the received token
+  const navigate = useNavigate();
+
+  const [
+    generateUserToken,
+    { data: tokenData, loading: tokenLoading, error: tokenError },
+  ] = useLazyQuery(GET_USER_TOKEN);
+  const { user, setUser } = useAuth();
+ 
+  useEffect(() => {
+    if (tokenData && tokenData.generateUserToken) {
+      const token = tokenData.generateUserToken;
+      login(token);
+      localStorage.setItem('token', token); // Store the token in local storage
       
-      console.log(props);
-
-      onLogin(token);
-       // Call the onLogin function with the token
+      navigate("/"); // Redirect to home page
     }
-    
+  }, [tokenData]);
+
+  const submitData = async (formData) => {
+    try{
+    const variables = {
+      email: formData.email,
+      password: formData.password,
+    };
+    await generateUserToken({ variables });
+  const chatEngineUser = {
+    username: formData.username,
+    secret: formData.password,
+    // Add any additional fields as needed (e.g., first_name, last_name, custom_json)
+  };
+  const response = await fetch('https://api.chatengine.io/users/', {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json',
+    'PRIVATE-KEY': '41c892f9-0d11-4cd4-94b0-e2683e92dc13' 
+  },
+  body: JSON.stringify(chatEngineUser)
+})
+
+if (!response.ok) {
+  throw new Error('Failed to create user in ChatEngine');
+}
+
+const responseData = await response.json(); // Parse response body as JSON
+// Log the user data returned from ChatEngine
+const res =responseData;
+onAuth({...res, secret:formData.password })
+console.log(user)
+// Handle success (redirect, show success message, etc.)
+} catch (error) {
+console.error('Error signing up:', error);
+// Handle error (show error message, allow user to retry, etc.)
+}
+}
+
+
+  if (tokenError) {
+    console.log(tokenError);
   }
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-80 flex items-center justify-center">
@@ -64,7 +95,7 @@ const LoginModal = (props) => {
         {/* Cancel Icon */}
         <button
           className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
-          onClick={closeModalFn}
+          // onClick={closeModalFn}
         >
           <MdCancel size={24} />
         </button>
@@ -77,10 +108,26 @@ const LoginModal = (props) => {
           </p>
         </div>
         <div className="p-6 space-y-4">
+        <div className="space-y-2">
+            <label className="text-sm font-medium leading-none">Username</label>
+            <input
+              {...register("username")}
+              id="username"
+              className="flex h-10 w-full rounded-md border border-input bg-background outline outline-2 outline-gray-500 px-3 py-2 text-sm"
+              placeholder="Username"
+              type="text"
+            />
+            {errors.username && (
+              <span className="text-red-600 text-md">
+                {errors.username.message}
+              </span>
+            )}
+          </div>
+
           <div className="space-y-2">
             <label className="text-sm font-medium leading-none">Email</label>
             <input
-              {...register('email')}
+              {...register("email")}
               id="email"
               className="flex h-10 w-full rounded-md border border-input bg-background outline outline-2 outline-gray-500 px-3 py-2 text-sm "
               placeholder="Username"
@@ -95,7 +142,7 @@ const LoginModal = (props) => {
           <div className="space-y-2">
             <label className="text-sm font-medium leading-none">Password</label>
             <input
-              {...register('password')}
+              {...register("password")}
               id="password"
               className="flex h-10 w-full rounded-md border border-input bg-background outline outline-2 outline-gray-500 px-3 py-2 text-sm "
               placeholder="Password"

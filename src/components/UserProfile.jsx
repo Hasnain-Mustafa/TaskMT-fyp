@@ -1,13 +1,19 @@
 import React from 'react';
 import { MdOutlineCancel } from 'react-icons/md';
-
+import { useNavigate } from "react-router-dom";
 import { Button } from '.';
 import { userProfileData } from '../data/dummy';
 import { useStateContext } from '../contexts/ContextProvider';
-
-
-const UserProfile = (props) => {
-  console.log(props)
+import avatar from "../data/avatar.jpg"
+import { useAuth } from '../contexts/AuthContext';
+const UserProfile = ({user}) => {
+  const { logout}= useAuth(); 
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    logout();
+    window.location.reload();
+    navigate('/');
+  };
   const { currentColor,setIsClicked } = useStateContext();
   const handleCloseModal = () => {
     // Call setIsClicked to close the modal
@@ -30,11 +36,12 @@ const UserProfile = (props) => {
       <div className="flex gap-5 items-center mt-6 border-color border-b-1 pb-6">
         <img
           className="rounded-full h-24 w-24"
-          src={props.user.avatar}
+          src={avatar}
           alt="user-profile"
         />
         <div>
-          <p className="font-semibold text-xl dark:text-gray-200"> {props.user.first_name} {props.user.last_name}</p>
+          <p className="font-semibold text-xl dark:text-gray-200">{user?.name ? user.name : 'User'}
+</p>
           <p className="text-gray-500 text-sm dark:text-gray-400">  Administrator   </p>
           <p className="text-gray-500 text-sm font-semibold dark:text-gray-400"> info@shop.com </p>
         </div>
@@ -64,6 +71,7 @@ const UserProfile = (props) => {
           text="Logout"
           borderRadius="10px"
           width="full"
+          onClick={handleLogout}
         />
       </div>
     </div>

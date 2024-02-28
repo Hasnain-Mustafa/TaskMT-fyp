@@ -5,12 +5,14 @@ import { BsChatLeft } from 'react-icons/bs';
 import { RiNotification3Line } from 'react-icons/ri';
 import { MdKeyboardArrowDown } from 'react-icons/md';
 import { TooltipComponent } from '@syncfusion/ej2-react-popups';
-
+// import { QueryResultProvider, useQueryResult } from "../contexts/QueryResultProvider";
 import avatar from '../data/avatar.jpg';
 import { Cart, Chat, Notification, UserProfile } from '.';
 import { useStateContext } from '../contexts/ContextProvider';
-
+import { useLazyQuery } from "@apollo/client";
+import { GET_CURRENT_USER } from '../GraphQL/Queries';
 const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
+
   <TooltipComponent content={title} position="BottomCenter">
     <button
       type="button"
@@ -30,7 +32,14 @@ const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
 const Navbar = (props) => {
   const { currentColor, activeMenu, setActiveMenu, handleClick, isClicked, setScreenSize, screenSize } = useStateContext();
   const { isThreadPage } = props;
+  const [current, setCurrent] = useState(null);
+
   const [displayBackButton, setDisplayBackButton] = useState(isThreadPage);
+  // const { data, loading, error, getCurrentUser } = useQueryResult();
+  const [
+    getCurrentUser,
+    { data : userData, loading, error }
+  ] = useLazyQuery(GET_CURRENT_USER);
 
   useEffect(() => {
     const handleResize = () => setScreenSize(window.innerWidth);
@@ -43,7 +52,14 @@ const Navbar = (props) => {
 
   useEffect(() => {
     setActiveMenu(screenSize > 900);
-  }, [screenSize]);
+     getCurrentUser();
+     if(userData && userData.getCurrentLoggedInUser){
+   const res= userData.getCurrentLoggedInUser
+   setCurrent(res)
+   console.log(res)
+  }
+
+  }, [screenSize,userData]);
 
   useEffect(() => {
     setDisplayBackButton(isThreadPage);
@@ -70,19 +86,21 @@ const Navbar = (props) => {
         <NavButton title="Notification" dotColor="rgb(254, 201, 15)" customFunc={() => handleClick('notification')} color={currentColor} icon={<RiNotification3Line />} />
         <TooltipComponent content="Profile" position="BottomCenter">
           <div className="flex items-center gap-2 cursor-pointer p-1 hover:bg-light-gray rounded-lg" onClick={() => handleClick('userProfile')}>
-            <img className="rounded-full w-8 h-8" src={props.user.avatar} alt="user-profile" />
+            <img className="rounded-full w-8 h-8" src={avatar} alt="user-profile" />
             <p>
-              <span className="text-gray-400 text-14">Hi,</span>{' '}
-              <span className="text-gray-400 font-bold ml-1 text-14">{props.user.first_name}</span>
+              <span className="text-gray-400 text-14">Hi,</span>
+              <span className="text-gray-400 font-bold ml-1 text-14">{current?.name ? current.name : 'User'}</span>
+
+
             </p>
             <MdKeyboardArrowDown className="text-gray-400 text-14" />
           </div>
         </TooltipComponent>
 
         {isClicked.cart && (<Cart />)}
-        {isClicked.chat && (<Chat user={props.user} />)}
+        {isClicked.chat && (<Chat  />)}
         {isClicked.notification && (<Notification  />)}
-        {isClicked.userProfile && (<UserProfile user={props.user} />)}
+        {isClicked.userProfile && (<UserProfile user={current}/>)}
       </div>
     </div>
   );
