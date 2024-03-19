@@ -4,7 +4,7 @@ import { MultiChatSocket, MultiChatWindow, useMultiChatLogic } from "react-chat-
 const Thread = (props) => {
 
   console.log(props)
-    const chatProps= useMultiChatLogic('5417960f-874e-4903-8cf7-407ebd2faab2',props.user.username, props.user.secret)
+    const chatProps= useMultiChatLogic('3aaa4d2d-0861-41d8-8f8f-a69acdbad1f6',props.user.username, props.user.secret)
     return (
       <div  style={{ width: '100vw', height: '85vh' }}>
       <MultiChatSocket {...chatProps} />

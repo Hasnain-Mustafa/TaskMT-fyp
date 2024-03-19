@@ -49,3 +49,22 @@
   display: inline-block;
   align-items: center !important;
 }
+
+/* Style the video call button */
+.custom-attachment-input .icon-wrapper::before {
+  content: "";
+  display: inline-block;
+  background-image: url('./data/video-call-icon.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.custom-attachment-input .icon-wrapper {
+  display: inline-block;
+}
+

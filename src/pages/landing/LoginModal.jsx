@@ -39,9 +39,9 @@ const LoginModal = (props) => {
     if (tokenData && tokenData.generateUserToken) {
       const token = tokenData.generateUserToken;
       login(token);
-      localStorage.setItem('token', token); // Store the token in local storage
+     
       
-      navigate("/"); // Redirect to home page
+      // navigate("/"); // Redirect to home page
     }
   }, [tokenData]);
 
@@ -61,7 +61,7 @@ const LoginModal = (props) => {
   method: 'PUT',
   headers: {
     'Content-Type': 'application/json',
-    'PRIVATE-KEY': '41c892f9-0d11-4cd4-94b0-e2683e92dc13' 
+    'PRIVATE-KEY': 'aef91783-1ef8-49c2-bbb7-9ed648b3288a' 
   },
   body: JSON.stringify(chatEngineUser)
 })
@@ -95,7 +95,7 @@ console.error('Error signing up:', error);
         {/* Cancel Icon */}
         <button
           className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
-          // onClick={closeModalFn}
+          onClick={closeModalFn}
         >
           <MdCancel size={24} />
         </button>

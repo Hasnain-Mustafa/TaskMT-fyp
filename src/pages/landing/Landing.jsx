@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import Logo from '../../data/CoLab-Logo.png';
 import HeroImg from '../../data/Hero1.svg';
-import Hero from './Hero'; // Import your Hero component
-import Navbar from './Navbar'; // Import your Navbar component
+
 import SignUpModal from './SignUpModal'; // Import your SignUpModal component
 import LoginModal from './LoginModal'; // Import your LoginModal component
 

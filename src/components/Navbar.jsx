@@ -5,14 +5,14 @@ import { BsChatLeft } from 'react-icons/bs';
 import { RiNotification3Line } from 'react-icons/ri';
 import { MdKeyboardArrowDown } from 'react-icons/md';
 import { TooltipComponent } from '@syncfusion/ej2-react-popups';
-// import { QueryResultProvider, useQueryResult } from "../contexts/QueryResultProvider";
-import avatar from '../data/avatar.jpg';
-import { Cart, Chat, Notification, UserProfile } from '.';
 import { useStateContext } from '../contexts/ContextProvider';
 import { useLazyQuery } from "@apollo/client";
 import { GET_CURRENT_USER } from '../GraphQL/Queries';
+import { Cart, Chat, Notification, UserProfile } from '.';
+import avatar from '../data/avatar.jpg';
+import { MdOutlineMissedVideoCall } from "react-icons/md";
+import { useNavigate } from 'react-router-dom'; // Import the useNavigate hook
 const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
-
   <TooltipComponent content={title} position="BottomCenter">
     <button
       type="button"
@@ -35,7 +35,7 @@ const Navbar = (props) => {
   const [current, setCurrent] = useState(null);
 
   const [displayBackButton, setDisplayBackButton] = useState(isThreadPage);
-  // const { data, loading, error, getCurrentUser } = useQueryResult();
+
   const [
     getCurrentUser,
     { data : userData, loading, error }
@@ -52,14 +52,13 @@ const Navbar = (props) => {
 
   useEffect(() => {
     setActiveMenu(screenSize > 900);
-     getCurrentUser();
-     if(userData && userData.getCurrentLoggedInUser){
-   const res= userData.getCurrentLoggedInUser
-   setCurrent(res)
-   console.log(res)
-  }
-
-  }, [screenSize,userData]);
+    getCurrentUser();
+    if(userData && userData.getCurrentLoggedInUser){
+      const res = userData.getCurrentLoggedInUser;
+      setCurrent(res);
+      console.log(res);
+    }
+  }, [screenSize, userData]);
 
   useEffect(() => {
     setDisplayBackButton(isThreadPage);
@@ -67,9 +66,16 @@ const Navbar = (props) => {
 
   const handleActiveMenu = () => setActiveMenu(!activeMenu);
 
+  const navigate = useNavigate(); // Initialize the useNavigate hook
+
   const handleBackButtonClick = () => {
     window.history.back();
-    setDisplayBackButton(false); // Update displayBackButton state when back button is clicked
+    setDisplayBackButton(false);
+  };
+
+  // Define the handleClick function to handle the click event for the video icon
+  const handleVideoClick = () => {
+    navigate('/prejoin'); // Redirect the user to the URL '/prejoin'
   };
 
   return (
@@ -81,6 +87,8 @@ const Navbar = (props) => {
       )}
 
       <div className="flex">
+        <NavButton title="Video-Call" customFunc={handleVideoClick} color={currentColor} icon={<MdOutlineMissedVideoCall />} />
+       
         <NavButton title="Cart" customFunc={() => handleClick('cart')} color={currentColor} icon={<FiShoppingCart />} />
         <NavButton title="Chat" dotColor="#03C9D7" customFunc={() => handleClick('chat')} color={currentColor} icon={<BsChatLeft />} />
         <NavButton title="Notification" dotColor="rgb(254, 201, 15)" customFunc={() => handleClick('notification')} color={currentColor} icon={<RiNotification3Line />} />
@@ -90,8 +98,6 @@ const Navbar = (props) => {
             <p>
               <span className="text-gray-400 text-14">Hi,</span>
               <span className="text-gray-400 font-bold ml-1 text-14">{current?.name ? current.name : 'User'}</span>
-
-
             </p>
             <MdKeyboardArrowDown className="text-gray-400 text-14" />
           </div>
@@ -100,6 +106,7 @@ const Navbar = (props) => {
         {isClicked.cart && (<Cart />)}
         {isClicked.chat && (<Chat  />)}
         {isClicked.notification && (<Notification  />)}
+       
         {isClicked.userProfile && (<UserProfile user={current}/>)}
       </div>
     </div>

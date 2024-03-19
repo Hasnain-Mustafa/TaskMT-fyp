@@ -1,20 +1,21 @@
+import 'livekit-react/dist/index.css'
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { FiSettings } from 'react-icons/fi';
 import { TooltipComponent } from '@syncfusion/ej2-react-popups';
 import { Navbar, Sidebar, ThemeSettings, TabbedMenu, Button } from './components';
+import {RoomPage} from './pages/RoomPage'
+import {PreJoinPage} from './pages/PreJoinPage'
 import { Projects, Ecommerce, Orders, AuthPage, Employees, Thread, Line, Area, Bar, Pie, Financial, ColorMapping, Pyramid, Stacked, Editor, Portfolio } from './pages';
 import './App.css';
 import Landing from './pages/landing/Landing';
 import { useStateContext } from './contexts/ContextProvider';
 import { ApolloProvider} from "@apollo/client";
 import client from './ApolloClient'
-import { useAuth } from './contexts/AuthContext';
-import { GET_CURRENT_USER } from "./GraphQL/Queries";
-import { useLazyQuery } from "@apollo/client";
 
 const AuthenticatedRoutes = ({user}) => {
   const isThreadPage = window.location.pathname === "/thread";
+  const isPreJoinPage= window.location.pathname==="/prejoin";
   // Destructuring activeMenu and themeSettings
   const { setCurrentColor, setCurrentMode, currentMode, activeMenu, currentColor, themeSettings, setThemeSettings } = useStateContext();
 
@@ -32,14 +33,14 @@ const AuthenticatedRoutes = ({user}) => {
               </button>
             </TooltipComponent>
         </div>
-        {!isThreadPage && activeMenu &&
+        {!isThreadPage  && activeMenu &&
           <div className="w-72 fixed sidebar dark:bg-secondary-dark-bg bg-white ">
             <Sidebar />
           </div>
         }
         <div
           className={
-            !isThreadPage && activeMenu
+            !isThreadPage  && activeMenu
               ? 'dark:bg-main-dark-bg bg-main-bg min-h-screen md:ml-72 w-full'
               : ''
           }
@@ -51,6 +52,7 @@ const AuthenticatedRoutes = ({user}) => {
             {themeSettings && (<ThemeSettings />)}
             <Routes>
               <Route path="/projects" element={<Projects />} />
+        
               <Route path="/" element={<Ecommerce />} />
               <Route path="/ecommerce" element={<Ecommerce />} />
               <Route path="/orders" element={<Orders />} />
@@ -62,6 +64,9 @@ const AuthenticatedRoutes = ({user}) => {
                 path="/thread"
                 element={<Thread user={user} isThreadPage={isThreadPage} />}
               />
+                <Route path="/prejoin" element={<PreJoinPage user={user} isPreJoinPage={isPreJoinPage}/>}/>
+            
+               <Route path="/room" element={<RoomPage />}/>
               <Route path="/line" element={<Line />} />
               <Route path="/area" element={<Area />} />
               <Route path="/bar" element={<Bar />} />

@@ -496,7 +496,7 @@ export const links = [
         icon: <AiOutlineShoppingCart />,
       },
       {
-        name: 'employees',
+        name: 'video-call',
         icon: <IoMdContacts />,
       },
       {

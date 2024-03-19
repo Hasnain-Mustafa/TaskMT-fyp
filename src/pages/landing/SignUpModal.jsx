@@ -61,7 +61,7 @@ const SignUpModal = ({ closeSignUpFn }) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'PRIVATE-KEY': '41c892f9-0d11-4cd4-94b0-e2683e92dc13' // Replace with your actual private key
+        'PRIVATE-KEY': 'aef91783-1ef8-49c2-bbb7-9ed648b3288a' // Replace with your actual private key
       },
       body: JSON.stringify(chatEngineUser)
     });

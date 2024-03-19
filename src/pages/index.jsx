@@ -16,6 +16,7 @@ export { default as Pyramid } from './Charts/Pyramid';
 export { default as Stacked } from './Charts/Stacked';
 
 export { default as Thread } from './Thread';
+
 export { default as Portfolio } from './Portfolio';
 export { default as AuthPage } from './AuthPage';
 export { default as Projects } from './Projects';
