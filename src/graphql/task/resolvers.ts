@@ -1,5 +1,29 @@
-import { CreateTaskInput } from '../../services/userService';
+import { CreateTaskInput,getAllProjectTasks,getProjectTasksPayload,getAssignedTasks,getAssignedTasksPayload } from '../../services/userService';
 import { createTask,deleteTask,updateTask } from '../../services/userService';
+
+const queries = {
+  getAllProjectTasks: async (_: any, payload: getProjectTasksPayload) => {
+    try{
+    const res = await getAllProjectTasks(payload);
+    return res;
+    }catch (error) {
+      // Handle any errors that occur during project creation
+      console.error('Error fetching created projects:', error);
+      throw new Error('Failed to fetch project');
+    }
+  },
+  getAssignedTasks: async (_: any, payload: getAssignedTasksPayload) => {
+    try{
+    const res = await getAssignedTasks(payload);
+    return res;
+    }catch (error) {
+      
+      console.error('Error fetching assigned tasks:', error);
+      throw new Error('Failed to fetch tasks');
+    }
+  }
+ 
+};
 
 const mutations = {
   createTask: async (_: any, payload: CreateTaskInput ) => {
@@ -17,4 +41,4 @@ const mutations = {
   deleteTask,
   updateTask
 };
-export const resolvers = { mutations };
+export const resolvers = { queries,mutations };

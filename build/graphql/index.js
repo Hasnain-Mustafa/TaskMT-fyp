@@ -22,6 +22,8 @@ function createApolloGraphqlServer() {
             ${task_1.Task.typeDefs}
             type Query {
                 ${user_1.User.queries}
+                ${project_1.Project.queries}
+                ${task_1.Task.queries}
             }            type Mutation {
                ${user_1.User.mutations}
                ${project_1.Project.mutations}
@@ -31,7 +33,7 @@ function createApolloGraphqlServer() {
             
         `,
             resolvers: {
-                Query: Object.assign({}, user_1.User.resolvers.queries),
+                Query: Object.assign(Object.assign(Object.assign({}, user_1.User.resolvers.queries), project_1.Project.resolvers.queries), task_1.Task.resolvers.queries),
                 Mutation: Object.assign(Object.assign(Object.assign({}, user_1.User.resolvers.mutations), project_1.Project.resolvers.mutations), task_1.Task.resolvers.mutations),
             },
         });

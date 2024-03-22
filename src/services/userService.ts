@@ -1,7 +1,6 @@
 import { createHmac, randomBytes } from 'crypto';
 import { prismaClient } from '../lib/db';
 import JWT from 'jsonwebtoken';
-import { userInfo } from 'os';
 
 export interface signUpTypes {
   email: string;
@@ -15,6 +14,12 @@ export interface UserTokenPayload {
   password: string;
 }
 
+export interface getProjectsPayload{
+  creatorId: string
+}
+export interface getAssignedProjectsPayload{
+  assigneeId: string
+}
 export interface CreateProjectInput {
   title: string;
   status: string;
@@ -38,7 +43,14 @@ export interface CreateTaskInput {
   projectId: string;
   
 }
+export interface getProjectTasksPayload{
+  projectId: string
+}
+export interface getAssignedTasksPayload{
+  projectId: string;
+  taskAssigneeId:string
 
+}
 const JWT_SECRET = process.env.JWT_SECRET;
 
 if (!JWT_SECRET) {
@@ -463,7 +475,7 @@ export const deleteProjectMember = async (
       }
     };
     
-    
+    //Queries
 //Generating JWT Token for User
 export const generateUserToken = async (payload: UserTokenPayload) => {
   try {
@@ -508,3 +520,74 @@ export const getUserById = (id: string) => {
     where: { id },
   });
 };
+
+export const getAllProjects = async (payload: getProjectsPayload) => {
+  try {
+    const {creatorId} =payload;
+    console.log(creatorId);
+    // Find all projects created by the user with the provided creatorId
+    const projects = await prismaClient.project.findMany({
+      where: {
+        creatorId
+      }
+    });
+
+    return projects;
+  } catch (error) {
+    console.error('Error fetching projects by creator ID:', error);
+    throw new Error('Failed to fetch projects by creator ID');
+  }
+};
+
+export const getAllProjectsAssigned = async (payload: getAssignedProjectsPayload) => {
+  try {
+    const {assigneeId} =payload;
+
+    const projects = await prismaClient.project.findMany({
+      where: {
+        assigneeIds: {
+          has: assigneeId
+        }
+      }
+    });
+    return projects;
+  } catch (error) {
+    console.error('Error fetching projects by assignee ID:', error);
+    throw new Error('Failed to fetch projects by assignee ID');
+  }
+};
+
+export const getAllProjectTasks = async (payload: getProjectTasksPayload) => {
+ const{projectId}=payload;
+try {
+  // Find all tasks where projectId matches the provided projectId
+  const tasks = await prismaClient.task.findMany({
+    where: {
+      projectId: projectId
+    }
+  });
+
+  return tasks;
+} catch (error) {
+  console.error('Error fetching tasks by project ID:', error);
+  throw new Error('Failed to fetch tasks by project ID');
+}
+};
+export const getAssignedTasks =  async (payload: getAssignedTasksPayload) => {
+  const{projectId,taskAssigneeId}=payload;
+  try {
+    // Find all tasks where projectId and taskAssigneeId match the provided values
+    const tasks = await prismaClient.task.findMany({
+      where: {
+        projectId: projectId,
+        taskAssigneeId: taskAssigneeId
+      }
+    });
+
+    return tasks;
+  } catch (error) {
+    console.error('Error fetching tasks by project ID and task assignee ID:', error);
+    throw new Error('Failed to fetch tasks by project ID and task assignee ID');
+  }
+};
+

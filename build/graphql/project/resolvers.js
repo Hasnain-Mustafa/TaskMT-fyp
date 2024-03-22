@@ -11,11 +11,35 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolvers = void 0;
 const userService_1 = require("../../services/userService");
+const userService_2 = require("../../services/userService");
+const queries = {
+    getAllProjects: (_, payload) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const res = yield (0, userService_1.getAllProjects)(payload);
+            return res;
+        }
+        catch (error) {
+            // Handle any errors that occur during project creation
+            console.error('Error fetching created projects:', error);
+            throw new Error('Failed to fetch project');
+        }
+    }),
+    getAllProjectsAssigned: (_, payload) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const res = yield (0, userService_1.getAllProjectsAssigned)(payload);
+            return res;
+        }
+        catch (error) {
+            console.error('Error fetching assigned projects:', error);
+            throw new Error('Failed to fetch project');
+        }
+    }),
+};
 const mutations = {
     createProject: (_, payload) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             // Call the createProject function from userService.ts
-            const res = yield (0, userService_1.createProject)(payload);
+            const res = yield (0, userService_2.createProject)(payload);
             return res.id;
         }
         catch (error) {
@@ -24,8 +48,8 @@ const mutations = {
             throw new Error('Failed to create project');
         }
     }),
-    updateProject: userService_1.updateProject,
-    deleteProject: userService_1.deleteProject,
-    deleteProjectMember: userService_1.deleteProjectMember
+    updateProject: userService_2.updateProject,
+    deleteProject: userService_2.deleteProject,
+    deleteProjectMember: userService_2.deleteProjectMember
 };
-exports.resolvers = { mutations };
+exports.resolvers = { queries, mutations };

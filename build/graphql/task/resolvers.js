@@ -11,11 +11,35 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolvers = void 0;
 const userService_1 = require("../../services/userService");
+const userService_2 = require("../../services/userService");
+const queries = {
+    getAllProjectTasks: (_, payload) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const res = yield (0, userService_1.getAllProjectTasks)(payload);
+            return res;
+        }
+        catch (error) {
+            // Handle any errors that occur during project creation
+            console.error('Error fetching created projects:', error);
+            throw new Error('Failed to fetch project');
+        }
+    }),
+    getAssignedTasks: (_, payload) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const res = yield (0, userService_1.getAssignedTasks)(payload);
+            return res;
+        }
+        catch (error) {
+            console.error('Error fetching assigned tasks:', error);
+            throw new Error('Failed to fetch tasks');
+        }
+    })
+};
 const mutations = {
     createTask: (_, payload) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             // Call the createTask function from userService.ts
-            const res = yield (0, userService_1.createTask)(payload);
+            const res = yield (0, userService_2.createTask)(payload);
             return res.id;
         }
         catch (error) {
@@ -24,7 +48,7 @@ const mutations = {
             throw new Error('Failed to create task');
         }
     }),
-    deleteTask: userService_1.deleteTask,
-    updateTask: userService_1.updateTask
+    deleteTask: userService_2.deleteTask,
+    updateTask: userService_2.updateTask
 };
-exports.resolvers = { mutations };
+exports.resolvers = { queries, mutations };
