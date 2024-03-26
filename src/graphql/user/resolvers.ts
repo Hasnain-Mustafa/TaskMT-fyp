@@ -7,14 +7,12 @@ import {
 } from '../../services/userService';
 
 const queries = {
-  generateUserToken: async (_: any, payload: UserTokenPayload) => {
-    const token = await generateUserToken(payload);
-    return token;
-  },
+  
   getCurrentLoggedInUser: async (_: any, parameters: any, context: any) => {
     if (context && context.user) {
       const id = context.user.id;
       const user = await getUserById(id as string);
+      console.log(user)
       return user;
     }
   }
@@ -29,6 +27,10 @@ const mutations = {
     } else {
       throw new Error('Failed to create project');
     }
+  },
+  generateUserToken: async (_: any, payload: UserTokenPayload) => {
+    const token = await generateUserToken(payload);
+    return token;
   },
 };
 

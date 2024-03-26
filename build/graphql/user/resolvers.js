@@ -12,14 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolvers = void 0;
 const userService_1 = require("../../services/userService");
 const queries = {
-    generateUserToken: (_, payload) => __awaiter(void 0, void 0, void 0, function* () {
-        const token = yield (0, userService_1.generateUserToken)(payload);
-        return token;
-    }),
     getCurrentLoggedInUser: (_, parameters, context) => __awaiter(void 0, void 0, void 0, function* () {
         if (context && context.user) {
             const id = context.user.id;
             const user = yield (0, userService_1.getUserById)(id);
+            console.log(user);
             return user;
         }
     })
@@ -33,6 +30,10 @@ const mutations = {
         else {
             throw new Error('Failed to create project');
         }
+    }),
+    generateUserToken: (_, payload) => __awaiter(void 0, void 0, void 0, function* () {
+        const token = yield (0, userService_1.generateUserToken)(payload);
+        return token;
     }),
 };
 exports.resolvers = { queries, mutations };

@@ -6,5 +6,7 @@ export const typeDefs = `#graphql
         password: String!
         isManager: String!
         salt: String
+        assignedProjectIds: [String!] 
     }
+   
 `;
