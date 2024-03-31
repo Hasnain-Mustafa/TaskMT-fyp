@@ -1,17 +1,20 @@
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
+import { useDispatch, useSelector } from 'react-redux'
+import { userLogin } from '../../features/auth/authActions'
+import Error from '../../components/Error';
+import Spinner from '../../components/Spinner';
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MdCancel } from "react-icons/md";
-import { useLazyQuery } from "@apollo/client";
-import { GET_USER_TOKEN } from "../../GraphQL/Queries";
 
-import { useAuth } from '../../contexts/AuthContext';
-const LoginModal = (props) => {
+import { MdCancel } from "react-icons/md";
+
+import { useNavigate } from 'react-router-dom'
+
+const LoginModal= ({closeModalFn}) => {
+  const { loading,userInfo, error, success } = useSelector((state) => state.auth)
+  const dispatch = useDispatch()
  
-  const { closeModalFn,onAuth } = props;
-  const { login } = useAuth();
 
   const LoginSchema = z.object({
     username: z.string().min(3).max(20),
@@ -27,71 +30,102 @@ const LoginModal = (props) => {
     resolver: zodResolver(LoginSchema),
   });
 
-  const navigate = useNavigate();
 
-  const [
-    generateUserToken,
-    { data: tokenData, loading: tokenLoading, error: tokenError },
-  ] = useLazyQuery(GET_USER_TOKEN);
-  const { user, setUser } = useAuth();
+  // const [
+  //   generateUserToken,
+  //   { data: tokenData, error: tokenError },
+  // ] = useLazyQuery(GET_USER_TOKEN);
+  
+  // const [getCurrentUser] = useLazyQuery(GET_CURRENT_USER, {
+  //   client: client,
+  //   onCompleted: data => {
+  //     console.log('Query Data ', data);
+  //   }
+  // });
+
  
-  useEffect(() => {
-    if (tokenData && tokenData.generateUserToken) {
-      const token = tokenData.generateUserToken;
-      login(token);
+  // const fetchUserData = async () => {
+  //   try {
+  //     const { data } = await getCurrentUser();
+  //     const currentUser = data?.getCurrentLoggedInUser;
+  //    localStorage.setItem('currentUser', JSON.stringify(currentUser))
+  //    console.log(currentUser)
+  //   } catch (error) {
+  //     console.error('Error fetching user data:', error);
+  //   }
+  // };
+  // useEffect(() => {
+  //   if (tokenData && tokenData.generateUserToken) {
+  //     const token = tokenData.generateUserToken;
+  //     fetchUserData();
+ 
      
-      
-      // navigate("/"); // Redirect to home page
+  //   login(token);
+    
+  //   }
+   
+  // }, [tokenData]);
+
+  const navigate = useNavigate()
+
+  // redirect authenticated user to profile screen
+  useEffect(() => {
+    if (userInfo) {
+      navigate('/dashboard')
     }
-  }, [tokenData]);
+  }, [navigate, userInfo])
 
   const submitData = async (formData) => {
     try{
-    const variables = {
-      email: formData.email,
-      password: formData.password,
-    };
-    await generateUserToken({ variables });
-  const chatEngineUser = {
-    username: formData.username,
-    secret: formData.password,
-    // Add any additional fields as needed (e.g., first_name, last_name, custom_json)
-  };
-  const response = await fetch('https://api.chatengine.io/users/', {
-  method: 'PUT',
-  headers: {
-    'Content-Type': 'application/json',
-    'PRIVATE-KEY': 'aef91783-1ef8-49c2-bbb7-9ed648b3288a' 
-  },
-  body: JSON.stringify(chatEngineUser)
-})
+      // const variables = ;
+      
+    dispatch(userLogin({
+        email: formData.email,
+        password: formData.password,
+      }))
+     
 
-if (!response.ok) {
-  throw new Error('Failed to create user in ChatEngine');
-}
+      const chatEngineUser = {
+        username: formData.username,
+        secret: formData.username,
+        // Add any additional fields as needed (e.g., first_name, last_name, custom_json)
+      };
+      const response = await fetch('https://api.chatengine.io/users/', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'PRIVATE-KEY': '793945c6-7d22-40ee-9fe1-952221fd4598' 
+      },
+      body: JSON.stringify(chatEngineUser)
+    })
+    
+    if (!response.ok) {
+      throw new Error('Failed to create user in ChatEngine');
+    }
+    
+      //   const userToken = result.payload.generateUserToken;
+      //   console.log(`tokeeen : ${userToken}`)
+       
+      //   dispatch(setCredentials({  userToken: userToken , userInfo: null}));
+      // });
+  
 
-const responseData = await response.json(); // Parse response body as JSON
-// Log the user data returned from ChatEngine
-const res =responseData;
-onAuth({...res, secret:formData.password })
-console.log(user)
-// Handle success (redirect, show success message, etc.)
 } catch (error) {
 console.error('Error signing up:', error);
-// Handle error (show error message, allow user to retry, etc.)
+
 }
 }
 
-
-  if (tokenError) {
-    console.log(tokenError);
-  }
+  // if (tokenError) {
+  //   console.log(tokenError);
+  // }
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-80 flex items-center justify-center">
       <form
         onSubmit={handleSubmit(submitData)}
         className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-md mx-auto bg-white relative"
       >
+         {error && <Error>{error}</Error>}
         {/* Cancel Icon */}
         <button
           className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
@@ -99,6 +133,8 @@ console.error('Error signing up:', error);
         >
           <MdCancel size={24} />
         </button>
+ 
+     
         <div className="flex flex-col space-y-1.5 p-6">
           <h3 className="font-semibold tracking-tight text-2xl text-center">
             Login
@@ -159,8 +195,10 @@ console.error('Error signing up:', error);
           <button
             className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-white hover:bg-primaryHover h-10 px-4 py-2 w-full"
             type="submit"
+            disabled={loading}
           >
-            Sign in
+             {loading ? <Spinner /> : ' Sign in'}
+           
           </button>
           <div className="flex flex-col space-y-2">
             {/* GitHub Login */}

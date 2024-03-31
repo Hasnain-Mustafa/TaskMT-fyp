@@ -4,22 +4,28 @@ import { useNavigate } from "react-router-dom";
 import { Button } from '.';
 import { userProfileData } from '../data/dummy';
 import { useStateContext } from '../contexts/ContextProvider';
+import {useSelector, useDispatch} from 'react-redux'
 import avatar from "../data/avatar.jpg"
-import { useAuth } from '../contexts/AuthContext';
+// import { useAuth } from '../contexts/AuthContext';
+import { logout } from '../features/auth/authSlice'
 const UserProfile = ({user}) => {
-  const { logout}= useAuth(); 
-  const navigate = useNavigate();
-  const handleLogout = () => {
-    logout();
-    window.location.reload();
-    navigate('/');
-  };
+const navigate = useNavigate();
+  const dispatch = useDispatch()
+  const { userInfo } = useSelector((state) => state.auth);
   const { currentColor,setIsClicked } = useStateContext();
   const handleCloseModal = () => {
     // Call setIsClicked to close the modal
     setIsClicked(false);
   };
 
+  const handleLogout = () => {
+    
+    dispatch(logout());
+ 
+    navigate('/login');
+  
+  // Redirect to /login after logout
+  };
   return (
     <div className="nav-item absolute right-1 top-16 bg-white dark:bg-[#42464D] p-8 rounded-lg w-96">
       <div className="flex justify-between items-center">
@@ -40,7 +46,7 @@ const UserProfile = ({user}) => {
           alt="user-profile"
         />
         <div>
-          <p className="font-semibold text-xl dark:text-gray-200">{user?.name ? user.name : 'User'}
+          <p className="font-semibold text-xl dark:text-gray-200">{userInfo?.name ? userInfo?.name : 'User'}
 </p>
           <p className="text-gray-500 text-sm dark:text-gray-400">  Administrator   </p>
           <p className="text-gray-500 text-sm font-semibold dark:text-gray-400"> info@shop.com </p>

@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect} from 'react';
 import { useForm } from 'react-hook-form';
+import { useDispatch, useSelector } from 'react-redux'
+import Error from '../../components/Error'
+import Spinner from '../../components/Spinner'
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { MdCancel } from 'react-icons/md';
-import { SIGN_UP_MUTATION } from "../../GraphQL/Mutations";
-import { useMutation } from "@apollo/client";
-import { useAuth } from '../../contexts/AuthContext';
-const SignUpModal = ({ closeSignUpFn }) => {
 
+import { useNavigate } from 'react-router-dom'
+
+import { registerUser } from '../../features/auth/authActions'
+const SignUpModal = ({closeSignUpFn}) => {
+  const { loading, userInfo, error: err, success } = useSelector(
+    (state) => state.auth
+  )
+  const dispatch = useDispatch()
   const signUpSchema = z
     .object({
       email: z.string().email(),
@@ -35,44 +41,27 @@ const SignUpModal = ({ closeSignUpFn }) => {
   });
 
   const [isProjectManager, setIsProjectManager] = useState(false);
-  const [signUpUser, { error }] = useMutation(SIGN_UP_MUTATION);
-  const { user, setUser } = useAuth();
-  
 
+  
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    // redirect user to login page if registration was successful
+    if (success) navigate('/login')
+    // redirect authenticated user to profile screen
+    if (userInfo) navigate('/')
+  }, [navigate, userInfo, success])
     
   const submitData = async (data) => {
     try {
-      // Create user in your database
-      const variables = {
+     
+      dispatch(registerUser({
         email: data.email,
         name: data.name,
         password: data.password,
         isManager: isProjectManager
-      };
-      await signUpUser({ variables });
-
-      // Create user in ChatEngine
-      const chatEngineUser = {
-        username: data.name,
-        secret: data.password,
-        // Add any additional fields as needed (e.g., first_name, last_name, custom_json)
-      };
-      const response = await fetch('https://api.chatengine.io/users/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'PRIVATE-KEY': 'aef91783-1ef8-49c2-bbb7-9ed648b3288a' // Replace with your actual private key
-      },
-      body: JSON.stringify(chatEngineUser)
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to create user in ChatEngine');
-    }
-
-    const responseData = await response.json(); // Parse response body as JSON
-    // Log the user data returned from ChatEngine
-setUser(responseData)
+      }))
+     
 
     // Handle success (redirect, show success message, etc.)
   } catch (error) {
@@ -88,7 +77,8 @@ setUser(responseData)
         onSubmit={handleSubmit(submitData)}
         className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-md mx-auto bg-white relative"
       >
-        <button
+          {err && <Error>{err}</Error>}
+          <button
           className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
           onClick={closeSignUpFn}
         >
@@ -167,8 +157,10 @@ setUser(responseData)
           <button
             className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-white hover:bg-primaryHover h-10 px-4 py-2 w-full"
             type="submit"
+            disabled={loading}
           >
-            Sign Up
+            
+            {loading ? <Spinner /> : 'Sign Up'}
           </button>
           <div className="flex flex-col space-y-2">
             <button className="rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-[#444] h-10 px-4 py-2 w-full flex items-center justify-center bg-[#333] text-white">

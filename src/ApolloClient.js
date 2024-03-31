@@ -1,30 +1,31 @@
-import { ApolloClient, ApolloLink,InMemoryCache, ApolloProvider, HttpLink, from } from "@apollo/client";
-import { onError } from "@apollo/client/link/error";
+import { ApolloClient, InMemoryCache, ApolloLink, HttpLink } from "@apollo/client";
 import { setContext } from '@apollo/client/link/context';
-import { useAuth } from './contexts/AuthContext';
+import { onError } from "@apollo/client/link/error";
 
-// const httpLink = new HttpLink({ uri: 'http://localhost:3000/graphql' });
+const httpLink = new HttpLink({ uri: 'http://localhost:3000/graphql' });
 
-// const authLink = new ApolloLink((operation, forward) => {
-//   // Retrieve the authorization token from local storage.
-//   const token = localStorage.getItem('token');
-//   console.log('Token:', token); // Log the token here
-//   // Use the setContext method to set the HTTP headers.
-//   operation.setContext({
-//     headers: {
-//       authorization: token ? `${token}` : ''
-//     }
-//   });
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem('token');
 
-//   // Call the next link in the middleware chain.
-//   return forward(operation);
-// });
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? token : "",
+    }
+  };
+});
+
+const errorLink = onError(({ graphQLErrors, networkError }) => {
+  if (graphQLErrors)
+    graphQLErrors.forEach(({ message, locations, path }) =>
+      console.log(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`)
+    );
+  if (networkError) console.log(`[Network error]: ${networkError}`);
+});
 
 const client = new ApolloClient({
-  uri: 'http://localhost:3000/graphql',
+  link: ApolloLink.from([errorLink, authLink.concat(httpLink)]),
   cache: new InMemoryCache(),
-  headers:{
-    authorization: localStorage.getItem('token') ||''
-  }
 });
+
 export default client;

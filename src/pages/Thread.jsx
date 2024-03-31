@@ -1,13 +1,17 @@
 
-import React from 'react'
+import React  from 'react'
+import {useSelector} from 'react-redux'
 import { MultiChatSocket, MultiChatWindow, useMultiChatLogic } from "react-chat-engine-advanced";
-const Thread = (props) => {
+const Thread = () => {
+  const { userInfo } = useSelector((state) => state.auth);
+ 
 
-  console.log(props)
-    const chatProps= useMultiChatLogic('3aaa4d2d-0861-41d8-8f8f-a69acdbad1f6',props.user.username, props.user.secret)
+    const chatProps= useMultiChatLogic('d4c68a5d-122e-495f-9108-5e7180ea035d',userInfo.name, userInfo.name)
     return (
+      
       <div  style={{ width: '100vw', height: '85vh' }}>
-      <MultiChatSocket {...chatProps} />
+       
+      {/* <MultiChatSocket {...chatProps} /> */}
       <MultiChatWindow {...chatProps} style={{height:'100%'}}/>
       </div>
   

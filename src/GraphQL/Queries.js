@@ -12,6 +12,8 @@ query GetCurrentLoggedInUser {
     email
     name
     isManager
+    password
+    assignedProjectIds
   }
 }
 

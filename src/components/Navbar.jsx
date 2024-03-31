@@ -6,12 +6,13 @@ import { RiNotification3Line } from 'react-icons/ri';
 import { MdKeyboardArrowDown } from 'react-icons/md';
 import { TooltipComponent } from '@syncfusion/ej2-react-popups';
 import { useStateContext } from '../contexts/ContextProvider';
-import { useLazyQuery } from "@apollo/client";
-import { GET_CURRENT_USER } from '../GraphQL/Queries';
+import { useAuth } from '../contexts/AuthContext';
 import { Cart, Chat, Notification, UserProfile } from '.';
 import avatar from '../data/avatar.jpg';
 import { MdOutlineMissedVideoCall } from "react-icons/md";
 import { useNavigate } from 'react-router-dom'; // Import the useNavigate hook
+import { useSelector } from 'react-redux'
+
 const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
   <TooltipComponent content={title} position="BottomCenter">
     <button
@@ -30,17 +31,16 @@ const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
 );
 
 const Navbar = (props) => {
+  
   const { currentColor, activeMenu, setActiveMenu, handleClick, isClicked, setScreenSize, screenSize } = useStateContext();
   const { isThreadPage } = props;
-  const [current, setCurrent] = useState(null);
+  const { userInfo } = useSelector((state) => state.auth);
+  //  const { userInfo } = useSelector((state) => state.user)
 
+ const {currentUser}=useAuth();
   const [displayBackButton, setDisplayBackButton] = useState(isThreadPage);
 
-  const [
-    getCurrentUser,
-    { data : userData, loading, error }
-  ] = useLazyQuery(GET_CURRENT_USER);
-
+  
   useEffect(() => {
     const handleResize = () => setScreenSize(window.innerWidth);
 
@@ -52,13 +52,8 @@ const Navbar = (props) => {
 
   useEffect(() => {
     setActiveMenu(screenSize > 900);
-    getCurrentUser();
-    if(userData && userData.getCurrentLoggedInUser){
-      const res = userData.getCurrentLoggedInUser;
-      setCurrent(res);
-      console.log(res);
-    }
-  }, [screenSize, userData]);
+ 
+  }, [screenSize]);
 
   useEffect(() => {
     setDisplayBackButton(isThreadPage);
@@ -97,7 +92,7 @@ const Navbar = (props) => {
             <img className="rounded-full w-8 h-8" src={avatar} alt="user-profile" />
             <p>
               <span className="text-gray-400 text-14">Hi,</span>
-              <span className="text-gray-400 font-bold ml-1 text-14">{current?.name ? current.name : 'User'}</span>
+              <span className="text-gray-400 font-bold ml-1 text-14">{userInfo.name ? userInfo.name: 'User'}</span>
             </p>
             <MdKeyboardArrowDown className="text-gray-400 text-14" />
           </div>
@@ -107,7 +102,7 @@ const Navbar = (props) => {
         {isClicked.chat && (<Chat  />)}
         {isClicked.notification && (<Notification  />)}
        
-        {isClicked.userProfile && (<UserProfile user={current}/>)}
+        {isClicked.userProfile && (<UserProfile />)}
       </div>
     </div>
   );

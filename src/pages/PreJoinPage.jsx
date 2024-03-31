@@ -7,9 +7,10 @@ import { AudioSelectButton, ControlButton, VideoRenderer, VideoSelectButton } fr
 import { createLocalVideoTrack } from 'livekit-client';
 import { useStateContext } from '../contexts/ContextProvider';
 import { createTokenClientSide } from '../apis/clientUtils';
+import {useSelector} from 'react-redux'
 import copyIcon from "../data/iconmonstr-copy-lined.svg";
 export const PreJoinPage = (props) => {
-    console.log(props.user.username);
+    const { userInfo } = useSelector((state) => state.auth);
     const { activeMenu } = useStateContext();
     const [url, setUrl] = useState('wss://taskmt-prjcu7kw.livekit.cloud');
     const [token, setToken] = useState('');
@@ -24,7 +25,8 @@ export const PreJoinPage = (props) => {
     const [videoDevice, setVideoDevice] = useState();
     const [meetingCode, setMeetingCode] = useState('');
     const [showTooltip, setShowTooltip] = useState(false); // State to control tooltip visibility
-   
+ 
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -39,6 +41,7 @@ export const PreJoinPage = (props) => {
   useEffect(()=>{
     generateMeetingCode();
   },[])
+  
 
     const generateMeetingCode = () => {
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -51,7 +54,7 @@ export const PreJoinPage = (props) => {
     const fetchToken = async () => {
         try {
             // Pass the meetingCode to createTokenClientSide function
-            const token = await createTokenClientSide(meetingCode, props.user.username);
+            const token = await createTokenClientSide(meetingCode, userInfo.name);
             setToken(token);
         } catch (error) {
             console.error('Error fetching token:', error);

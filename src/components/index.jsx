@@ -16,3 +16,5 @@ export { default as ChartsHeader } from './ChartsHeader';
 export { default as TabbedMenu } from './TabbedMenu';
 export { default as Header } from './Header';
 
+export { default as Spinner} from './Spinner';
+export { default as Error} from './Error';

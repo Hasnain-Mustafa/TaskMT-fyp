@@ -1,7 +1,6 @@
 import React, { useState,useEffect } from 'react';
-import Kanban from '../pages/Kanban';
-import Calendar from '../pages/Calendar';
 
+import { Kanban,Calendar } from '../pages'
 import getStatusColor from '../utils/utils';
 const Tab = ({ label, value, selected, onSelect }) => (
   <div

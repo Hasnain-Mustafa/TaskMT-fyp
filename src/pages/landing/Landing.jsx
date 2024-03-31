@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Logo from '../../data/CoLab-Logo.png';
 import HeroImg from '../../data/Hero1.svg';
 
 import SignUpModal from './SignUpModal'; // Import your SignUpModal component
 import LoginModal from './LoginModal'; // Import your LoginModal component
 
-function Landing({onAuth}) {
+function Landing() {
+
 
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSignUpOpen, setisSignUpOpen] = useState(false);
@@ -25,12 +26,12 @@ function Landing({onAuth}) {
   const closeSignUp = () => {
     setisSignUpOpen(false);
   };
-
+ 
 
   return (
     
     <div className=" mx-auto"> {/* Centering the main div */}
-     
+    
         <header className="mt-8 ">
         <nav className="flex justify-between items-center mx-40">
       <img src={Logo} alt="" />
@@ -41,7 +42,7 @@ function Landing({onAuth}) {
         >
           Log In
         </button>
-        {isLoginOpen && <LoginModal onAuth={onAuth} closeModalFn={closeLogin} />}
+        {isLoginOpen && <LoginModal closeModalFn={closeLogin} />}
       </div>
     </nav>
     <section className="mt-[3.4rem] flex justify-center">
