@@ -1,5 +1,5 @@
 import React, { useState,useEffect } from 'react';
-
+import { useSelector, useDispatch } from 'react-redux';
 import { Kanban,Calendar } from '../pages'
 import getStatusColor from '../utils/utils';
 const Tab = ({ label, value, selected, onSelect }) => (
@@ -42,19 +42,8 @@ const TabbedBar = ({ tabs, defaultTab }) => {
 };
 
 const TabbedMenu = () => {
-  const [tasks, setTasks] = useState([]);
-  // Fetch tasks data and update the state
-  useEffect(() => {
-    fetch("http://localhost:8001/kanbanData")
-      .then((res) => res.json())
-      .then((resp) => {
-    
-        setTasks(resp);
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
-  }, []);
+ 
+  const { tasks } = useSelector((state) => state.tasks);
   const mapTasksToCalendarFormat = (tasks) => ({
     
  

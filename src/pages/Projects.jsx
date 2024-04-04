@@ -1,42 +1,37 @@
-// Projects.js
-import React, { useState } from 'react';
-import ProjectCard from '../components/ProjectCard';
-import Button from '@mui/material/Button';
-import Modal from '@mui/material/Modal';
-import Box from '@mui/material/Box';
-import { TextField } from '@mui/material';
-import { useStateContext } from '../contexts/ContextProvider';
+import React, { useState , useEffect} from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { Button, Modal, Box, TextField } from '@mui/material';
+import { createProject, deleteProject } from '../features/projects/projectActions'; // Import the createProject action
 import { useNavigate } from 'react-router-dom';
+import { setCredentials  } from '../features/projects/projectSlice'
+import { useStateContext } from '../contexts/ContextProvider';
+import { useGetAllProjectsQuery} from '../app/services/projects/projectsService'
+import ProjectCard from '../components/ProjectCard'
 const Projects = () => {
+  const { userInfo } = useSelector((state) => state.auth);
+  const { projects } = useSelector((state) => state.projects);
   const { currentColor } = useStateContext();
-  const [projectList, setProjectList] = useState([
-    { id: 1, name: 'Project 1', description: 'Description for Project 1' },
-    // Add more projects as needed
-  ]);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(false);
-  const [newProjectData, setNewProjectData] = useState({ name: '', description: '' });
+  const [newProjectData, setNewProjectData] = useState({
+    title: '',
+    status: '', 
+    summary: '', 
+    weeks: '', 
+    budget: '', 
+    assigneeEmails: [],
+    creatorId: userInfo.id // Set creatorId directly to userInfo.id
+  });
 
-  const addProject = () => {
-    const newProject = {
-      id: projectList.length + 1,
-      name: newProjectData.name,
-      description: newProjectData.description,
-    };
+  const { data, isFetching} = useGetAllProjectsQuery({ creatorId: userInfo.id });
 
-    setProjectList([...projectList, newProject]);
-    setOpenModal(false);
-    setNewProjectData({ name: '', description: '' });
-  };
-
-  const deleteProject = (projectId) => {
-    const updatedProjects = projectList.filter((project) => project.id !== projectId);
-    setProjectList(updatedProjects);
-  };
-
-
+  useEffect(() => {
+    console.log(data)
+    if (data) dispatch(setCredentials(data?.getAllProjects))
+    deleteProject();
+  }, [data, dispatch])
   const onViewDetails = () => {
-    // Replace '/details' with the actual URL you want to navigate to
     navigate('/menu-tab');
   };
 
@@ -50,24 +45,48 @@ const Projects = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewProjectData({ ...newProjectData, [name]: value });
+  
+    // If the field is assigneeEmails, split the input by commas to create an array
+    const updatedValue = name === 'assigneeEmails' ? value.split(',').map(email => email.trim()) : value;
+  
+    setNewProjectData({ ...newProjectData, [name]: updatedValue });
   };
 
+  const handleAddProject = () => {
+    console.log(newProjectData)
+    dispatch(createProject(newProjectData));
+   
+    handleCloseModal();
+    setNewProjectData({
+      title: '',
+      status: '', 
+      summary: '', 
+      weeks: '', 
+      budget: '', 
+      assigneeEmails: [],
+      creatorId: userInfo.id // Set creatorId directly to userInfo.id
+    });
+  };
+
+  const handleDeleteProject = (projectId) => {
+ dispatch(deleteProject({projectId}))
+  };
   return (
     <div className="p-6">
       <div className="mb-4">
-        <Button className="text-xs" variant="outlined" onClick={handleOpenModal}  style={{ color: currentColor }}>
+        <Button className="text-xs" variant="outlined" onClick={handleOpenModal} style={{ color: currentColor }}>
           Add Project
         </Button>
       </div>
 
+      
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
-        {projectList.map((project) => (
+        {projects.map((project) => (
           <ProjectCard
             key={project.id}
-            name={project.name}
-            description={project.description}
-            onDelete={() => deleteProject(project.id)}
+            name={project.title}
+            description={project.summary}
+            onDelete={() => handleDeleteProject(project.id)}
             onViewDetails={onViewDetails} 
           />
         ))}
@@ -89,21 +108,53 @@ const Projects = () => {
         >
           <TextField
             fullWidth
-            label="Project Name"
-            name="name"
-            value={newProjectData.name}
+            label="Project Title"
+            name="title"
+            value={newProjectData.title}
             onChange={handleInputChange}
             margin="normal"
           />
           <TextField
             fullWidth
-            label="Project Description"
-            name="description"
-            value={newProjectData.description}
+            label="Project Status"
+            name="status"
+            value={newProjectData.status}
             onChange={handleInputChange}
             margin="normal"
           />
-          <Button variant="contained" onClick={addProject}  >
+          <TextField
+            fullWidth
+            label="Project Summary"
+            name="summary"
+            value={newProjectData.summary}
+            onChange={handleInputChange}
+            margin="normal"
+          />
+          <TextField
+            fullWidth
+            label="Project Weeks"
+            name="weeks"
+            value={newProjectData.weeks}
+            onChange={handleInputChange}
+            margin="normal"
+          />
+          <TextField
+            fullWidth
+            label="Project Budget"
+            name="budget"
+            value={newProjectData.budget}
+            onChange={handleInputChange}
+            margin="normal"
+          />
+          <TextField
+            fullWidth
+            label="Assignee Emails"
+            name="assigneeEmails"
+            value={newProjectData.assigneeEmails}
+            onChange={handleInputChange}
+            margin="normal"
+          />
+          <Button variant="contained" onClick={handleAddProject}>
             Add Project
           </Button>
         </Box>

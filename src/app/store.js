@@ -1,13 +1,22 @@
-import { configureStore } from '@reduxjs/toolkit'
-import authReducer from '../features/auth/authSlice'
+import { configureStore } from '@reduxjs/toolkit';
+import authReducer from '../features/auth/authSlice';
+import projectReducer from '../features/projects/projectSlice';
+import { authApi } from './services/auth/authService';
+import { projectsApi } from './services/projects/projectsService'; // Import the projectsApi
+import taskReducer from '../features/tasks/taskSlice'
+import { tasksApi } from './services/tasks/tasksService';
 
-import { authApi } from './services/auth/authService'
 const store = configureStore({
   reducer: {
     auth: authReducer,
-    [authApi.reducerPath]: authApi.reducer,
+    projects: projectReducer,
+    tasks: taskReducer,
+    [authApi.reducerPath]: authApi.reducer, // Assign unique reducerPath for authApi
+    [projectsApi.reducerPath]: projectsApi.reducer, 
+    [tasksApi.reducerPath]: tasksApi.reducer
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(authApi.middleware),
-})
-export default store
+    getDefaultMiddleware().concat(authApi.middleware, projectsApi.middleware, tasksApi.middleware) // Include projectsApi.middleware
+});
+
+export default store;
