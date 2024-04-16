@@ -1,113 +1,168 @@
-import React, { useState , useEffect} from 'react';
-import { useForm } from 'react-hook-form';
-import { useDispatch, useSelector } from 'react-redux'
-import Error from '../../components/Error'
-import Spinner from '../../components/Spinner'
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { MdCancel } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import Backdrop from "./Backdrop";
+import { motion } from "framer-motion";
+import { registerUser } from "../../features/auth/authActions";
 
-import { useNavigate } from 'react-router-dom'
-
-import { registerUser } from '../../features/auth/authActions'
-const SignUpModal = ({closeSignUpFn}) => {
-  const { loading, userInfo, error: err, success } = useSelector(
-    (state) => state.auth
-  )
-  const dispatch = useDispatch()
+const SignUpModal = ({ closeSignUpFn }) => {
+  const {
+    loading,
+    userInfo,
+    error: err,
+    success,
+  } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const signUpSchema = z
     .object({
       email: z.string().email(),
       name: z.string(),
       password: z
-        .string({ required_error: 'Password is required' })
-        .min(8, { message: 'Password must be at least 8 characters long' })
-        .max(20, { message: 'Password cannot be more than 20 characters long' }),
+        .string({ required_error: "Password is required" })
+        .min(8, { message: "Password must be at least 8 characters long" })
+        .max(20, {
+          message: "Password cannot be more than 20 characters long",
+        }),
       confirmPassword: z
         .string()
-        .min(8, { message: 'Confirmation Password must also be at least 8 characters long' })
-        .max(20, { message: 'Confrim Password cannot be more than 20 characters long' }),
+        .min(8, {
+          message:
+            "Confirmation Password must also be at least 8 characters long",
+        })
+        .max(20, {
+          message: "Confrim Password cannot be more than 20 characters long",
+        }),
     })
     .refine((values) => values.password === values.confirmPassword, {
-      message: 'Passwords do not match',
-      path: ['confirmPassword'],
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
     });
 
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
   } = useForm({
-    resolver: zodResolver(signUpSchema)
+    resolver: zodResolver(signUpSchema),
   });
-
   const [isProjectManager, setIsProjectManager] = useState(false);
 
-  
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
     // redirect user to login page if registration was successful
-    if (success) navigate('/login')
+    if (success) navigate("/login");
     // redirect authenticated user to profile screen
-    if (userInfo) navigate('/')
-  }, [navigate, userInfo, success])
-    
-  const submitData = async (data) => {
+    if (userInfo) navigate("/");
+  }, [navigate, userInfo, success]);
+
+  const submitformData = async (formData) => {
     try {
-     
-      dispatch(registerUser({
-        email: data.email,
-        name: data.name,
-        password: data.password,
-        isManager: isProjectManager
-      }))
-     
+      dispatch(
+        registerUser({
+          email: formData.email,
+          name: formData.name,
+          password: formData.password,
+          isManager: isProjectManager,
+        })
+      );
+    } catch (error) {
+      console.error("Error signing up:", error);
+      // Handle error (show error message, allow user to retry, etc.)
+    }
+  };
 
-    // Handle success (redirect, show success message, etc.)
-  } catch (error) {
-    console.error('Error signing up:', error);
-    // Handle error (show error message, allow user to retry, etc.)
-  }
-}
+  const dropIn = {
+    hidden: {
+      y: "-100vh",
+      opacity: 0,
+    },
+    visible: {
+      y: "0",
+      opacity: 1,
+      transition: {
+        duration: 0.1,
+        type: "spring",
+        damping: 25,
+        stiffness: 500,
+      },
+    },
+    exit: {
+      y: "100vh",
+      opacity: 0,
+    },
+  };
 
+  const buttonVariants = {
+    whileHover: {
+      scale: 1.05,
+      transition: { duration: 0.1, ease: "linear" },
+    },
+    whileTap: {
+      scale: 0.75,
+      transition: { duration: 0.1, ease: "linear" },
+    },
+  };
 
   return (
-    <div className="fixed inset-0 bg-gray-800 bg-opacity-80 flex items-center justify-center">
-      <form
-        onSubmit={handleSubmit(submitData)}
+    <Backdrop onClick={closeSignUpFn}>
+      <motion.form
+        variants={dropIn}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        onSubmit={handleSubmit(submitformData)}
+        onClick={(e) => e.stopPropagation()}
         className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-md mx-auto bg-white relative"
       >
-          {err && <Error>{err}</Error>}
-          <button
+        <motion.button
+          whileTap={{
+            scale: 0.75,
+            transition: { duration: 0.1, ease: "linear" },
+          }}
           className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
           onClick={closeSignUpFn}
         >
           <MdCancel size={24} />
-        </button>
+        </motion.button>
         <div className="flex flex-col space-y-1.5 p-4">
-          <h3 className="font-semibold tracking-tight text-2xl text-center">Sign Up</h3>
-          <p className="text-sm text-muted-foreground text-center">Please enter your information to create an account.</p>
+          <h3 className="font-semibold tracking-tight text-2xl text-center">
+            Sign Up
+          </h3>
+          <p className="text-sm text-muted-foreground text-center">
+            Please enter your information to create an account.
+          </p>
         </div>
         <div className="p-4 space-y-2">
           <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium leading-none">Email</label>
+            <label htmlFor="email" className="text-sm font-medium leading-none">
+              Email
+            </label>
             <input
-              {...register('email')}
+              {...register("email")}
               id="email"
-              className="flex h-10 w-full rounded-md border border-input bg-background outline outline-2 outline-gray-500 px-3 py-2 text-sm"
+              className="flex h-10 min-w-full rounded-md border border-input bg-background outline outline-2 outline-gray-500 px-3 py-2 text-sm"
               placeholder="Enter your email"
               type="text"
             />
             {errors.email && (
-              <span className="tex-red-500 text-md">{errors.email.message}</span>
+              <span className="tex-red-500 text-md">
+                {errors.email.message}
+              </span>
             )}
           </div>
           <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium leading-none">Name</label>
+            <label htmlFor="name" className="text-sm font-medium leading-none">
+              Name
+            </label>
             <input
-              {...register('name')}
+              {...register("name")}
               id="name"
-              className="flex h-10 w-full rounded-md border border-input bg-background outline outline-2 outline-gray-500 px-3 py-2 text-sm"
+              className="flex h-10 min-w-full rounded-md border border-input bg-background outline outline-2 outline-gray-500 px-3 py-2 text-sm"
               placeholder="Enter your name"
               type="text"
             />
@@ -116,11 +171,16 @@ const SignUpModal = ({closeSignUpFn}) => {
             )}
           </div>
           <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium leading-none">Password</label>
+            <label
+              htmlFor="password"
+              className="text-sm font-medium leading-none"
+            >
+              Password
+            </label>
             <input
-              {...register('password')}
+              {...register("password")}
               id="password"
-              className="flex h-10 w-full rounded-md border border-input bg-background outline outline-2 outline-gray-500 px-3 py-2 text-sm"
+              className="flex h-10 min-w-full rounded-md border border-input bg-background outline outline-2 outline-gray-500 px-3 py-2 text-sm"
               placeholder="Password"
               type="password"
             />
@@ -129,16 +189,23 @@ const SignUpModal = ({closeSignUpFn}) => {
             )}
           </div>
           <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium leading-none">Confirm Password</label>
+            <label
+              htmlFor="password"
+              className="text-sm font-medium leading-none"
+            >
+              Confirm Password
+            </label>
             <input
-              {...register('confirmPassword')}
+              {...register("confirmPassword")}
               id="confirm-password"
-              className="flex h-10 w-full rounded-md border border-input bg-background outline outline-2 outline-gray-500 px-3 py-2 text-sm"
+              className="flex h-10 min-w-full rounded-md border border-input bg-background outline outline-2 outline-gray-500 px-3 py-2 text-sm"
               placeholder="Confirm Password"
               type="password"
             />
             {errors.confirmPassword && (
-              <span className="text-red-500 text-md">{errors.confirmPassword.message}</span>
+              <span className="text-red-500 text-md">
+                {errors.confirmPassword.message}
+              </span>
             )}
           </div>
           <div className="space-y-2">
@@ -147,33 +214,79 @@ const SignUpModal = ({closeSignUpFn}) => {
                 type="checkbox"
                 checked={isProjectManager}
                 onChange={(e) => setIsProjectManager(e.target.checked)}
-                className="h-5 w-5 text-primary border-primary rounded focus:ring-primary"
+                className="h-5 w-5 text-black border-black rounded focus:ring-black"
               />
-              <span className="ml-2 text-sm font-medium">Sign up as Project Manager</span>
+              <span className="ml-2 text-sm font-medium">
+                Sign up as Project Manager
+              </span>
             </label>
           </div>
         </div>
-        <div className="items-center p-4 flex flex-col space-y-4">
-          <button
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-white hover:bg-primaryHover h-10 px-4 py-2 w-full"
-            type="submit"
-            disabled={loading}
-          >
-            
-            {loading ? <Spinner /> : 'Sign Up'}
-          </button>
+        <div className="items-center p-6 flex flex-col space-y-4">
           <div className="flex flex-col space-y-2">
-            <button className="rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-[#444] h-10 px-4 py-2 w-full flex items-center justify-center bg-[#333] text-white">
-              Sign Up with GitHub
-            </button>
-            <button className="rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-[#5693f4] h-10 px-4 py-2 w-full flex items-center justify-center bg-[#4285F4] text-white">
-              Sign Up with Google
-            </button>
+            <motion.button
+              variants={buttonVariants}
+              whileTap="whileTap"
+              whileHover="whileHover"
+              className="rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-black text-white hover:bg-Hover h-10 px-4 py-2 w-full"
+              type="submit"
+            >
+              Sign Up
+            </motion.button>
+            <motion.button
+              variants={buttonVariants}
+              whileTap="whileTap"
+              whileHover="whileHover"
+              className="rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-[#444] h-10 px-4 py-2 w-full flex items-center justify-center bg-[#333] text-white"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-5 h-5 mr-2"
+              >
+                <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path>
+                <path d="M9 18c-4.51 2-5-2-7-2"></path>
+              </svg>
+              SignUp with GitHub
+            </motion.button>
+            <motion.button
+              variants={buttonVariants}
+              whileTap="whileTap"
+              whileHover="whileHover"
+              className="rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-[#ff2a4d]/60 h-10 px-4 py-2 w-full flex items-center justify-center bg-[#ff2a4d] text-white"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-5 h-5 mr-2"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="4"></circle>
+                <line x1="21.17" x2="12" y1="8" y2="8"></line>
+                <line x1="3.95" x2="8.54" y1="6.06" y2="14"></line>
+                <line x1="10.88" x2="15.46" y1="21.94" y2="14"></line>
+              </svg>
+              SignUp with Google
+            </motion.button>
           </div>
         </div>
-      </form>
-    </div>
+      </motion.form>
+    </Backdrop>
   );
 };
 
-export default SignUpModal; 
+export default SignUpModal;

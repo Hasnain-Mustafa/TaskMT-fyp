@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import { createTask, deleteTask, updateTask } from './taskActions'; // Import updateTask action creator
 
 const initialState = {
+assignee:{},
   tasks: [],
   loading: false,
   error: null,
@@ -14,6 +15,9 @@ const taskSlice = createSlice({
   reducers: {
     setCredentials: (state, { payload }) => {
       state.tasks = payload;
+    },
+    setAssignee: (state, { payload }) => {
+      state.assignee = payload;
     },
   },
   extraReducers: (builder) => {
@@ -62,5 +66,5 @@ const taskSlice = createSlice({
   },
 });
 
-export const { setCredentials } = taskSlice.actions;
+export const { setCredentials, setAssignee } = taskSlice.actions;
 export default taskSlice.reducer;

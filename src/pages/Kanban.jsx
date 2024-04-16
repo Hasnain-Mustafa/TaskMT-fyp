@@ -13,6 +13,7 @@ import { setCredentials  } from '../features/tasks/taskSlice'
 import { updateTask, deleteTask } from '../features/tasks/taskActions';
 import { useGetAssignedTasksQuery} from '../app/services/tasks/tasksService'
 import { Snackbar, Button } from '@mui/material';
+
 const getStatusColor = (status) => {
   switch (status) {
     case 'Open':
@@ -55,83 +56,45 @@ const Kanban = () => {
   const { tasks } = useSelector((state) => state.tasks);
   const { userInfo} = useSelector((state) => state.auth);
   const [showPopup, setShowPopup] = useState(false);
+ 
 
   const togglePopup = () => {
     setShowPopup(!showPopup);
   };
 
-  const { data : tasksData, isFetching} = useGetAssignedTasksQuery({ projectId: "660b041a439272a58ead3b54", taskAssigneeId : userInfo.id });
- // const updateTasks = (newTask) => {
-  //   setTasks([...tasks, newTask]);
-  // };
+  const { data: tasksData, isFetching } = useGetAssignedTasksQuery({ projectId: "660b041a439272a58ead3b54", taskAssigneeId : userInfo.id });
+ 
   useEffect(() => {
     if (tasksData) {
       dispatch(setCredentials(tasksData?.getAssignedTasks));
     }
   }, [tasksData, dispatch]);
-  const onActionBegin = (args) => {
-    if (args.requestType === 'cardChange' && args.changedRecords && args.changedRecords.length > 0) {
-      const changedTask = args.changedRecords[0];
-      const targetColumnKey = changedTask.Status;
-  
-       // Check if the user is a manager and the target status is 'Close'
-    if (!userInfo.isManager && targetColumnKey === 'Close') {
-      // Prevent changing the status to 'Close'
-      args.cancel = true;
-          // Show the popup
-          togglePopup();
-      return;
-    }
-      // Create a new task object with the updated status
-      const updatedTask = {
-        ...changedTask,
-        status: targetColumnKey,
-        taskId: changedTask.id,
-        title: changedTask.Title,
-       summary: changedTask.Summary
-        
-      };
- 
-      // Dispatch the action to update the task
-      dispatch(updateTask(updatedTask));
-    }
-  };
-  
-
-  
- 
 
   const onActionComplete = (args) => {
-    console.log(args)
-    if (args.requestType === 'cardChanged' && name === 'actionComplete') {
-      const changedTask = args.changedRecords[0]; // Assuming that only one task is changed at a time
-
+    if (args.requestType === 'cardChanged' && args.changedRecords.length > 0) {
+      const changedTask = args.changedRecords[0];
       const updatedTask = {
         ...changedTask,
         status: changedTask.Status,
         taskId: changedTask.id,
         title: changedTask.Title,
-       summary: changedTask.Summary
-        
+        summary: changedTask.Summary
       };
- 
-      // Dispatch the action to update the task
-      dispatch(updateTask(updatedTask)); 
-    }
-    
- 
-  else if(
+
+      dispatch(updateTask(updatedTask));
+
+     
+    } 
+    else if (
       args &&
       args.requestType === 'cardRemoved' &&
       args.deletedRecords &&
       args.deletedRecords.length > 0
     ){
-    
-      const deletedTask = args.deletedRecords[0] // Assuming that only one task is deleted at a time
+      const deletedTask = args.deletedRecords[0];
       dispatch(deleteTask({ taskId: deletedTask.id }));
-  
-     
-  }};
+    }
+  };
 
   let fields = [
     { key: 'Title', type: 'TextBox' },
@@ -143,17 +106,17 @@ const Kanban = () => {
     <div className="m-2 md:m-10 mt-24 p-2 md:p-10 rounded-3xl">
       <Header title="Tasks" />
       <Snackbar
-  open={showPopup}
-  autoHideDuration={6000}
-  onClose={togglePopup}
-  message="Only project manager can mark this task as complete"
-  action={
-    <Button color="primary" size="small" onClick={togglePopup}>
-      Close
-    </Button>
-  }
-/>
-      <CreateTaskModal/>
+        open={showPopup}
+        autoHideDuration={6000}
+        onClose={togglePopup}
+        message="Only project manager can mark this task as complete"
+        action={
+          <Button color="primary" size="small" onClick={togglePopup}>
+            Close
+          </Button>
+        }
+      />
+      <CreateTaskModal />
       {tasks && tasks.length > 0 && (
         <KanbanComponent
           id="kanban"
@@ -181,21 +144,21 @@ const Kanban = () => {
                     <img className="rounded-full h-8 w-8" src={avatar} alt="user-profile" />
                     <div>
                       <Typography variant="body2" style={{ display: 'block', marginLeft: '4px' }}>
-                         {data.startDate && new Date(data.startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric'})}
-  {' - '}
-  {data.dueDate && new Date(data.dueDate).toLocaleDateString('en-US', {month: '2-digit', day: '2-digit', year: 'numeric'})}
-  <br />
-  {data.startDate && new Date(data.startDate).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true })}
-  {' - '}
-  {data.dueDate && new Date(data.dueDate).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true })}
+                        {data.startDate && new Date(data.startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric'})}
+                        {' - '}
+                        {data.dueDate && new Date(data.dueDate).toLocaleDateString('en-US', {month: '2-digit', day: '2-digit', year: 'numeric'})}
+                        <br />
+                        {data.startDate && new Date(data.startDate).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true })}
+                        {' - '}
+                        {data.dueDate && new Date(data.dueDate).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true })}
                       </Typography>
                     </div>
                   </div>
                 </div>
               </div>
             ),
+        
           }}
-          actionBegin={onActionBegin}
           actionComplete={onActionComplete}
           dialogSettings={{ fields: fields }}
           style={{ marginTop: '20px' }}

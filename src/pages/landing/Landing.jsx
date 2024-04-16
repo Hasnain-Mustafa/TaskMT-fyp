@@ -1,15 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import Logo from '../../data/CoLab-Logo.png';
-import HeroImg from '../../data/Hero1.svg';
+import { useState } from "react";
+import { Navbar } from "./components";
+import { Hero, Pricing, Showcase, Footer, CountUp } from "./sections";
+import { MotionConfig } from "framer-motion";
+import CommunityIcon from "./icon-communities.svg";
+import MessagesIcon from "./icon-messages.svg";
 
-import SignUpModal from './SignUpModal'; // Import your SignUpModal component
-import LoginModal from './LoginModal'; // Import your LoginModal component
-
-function Landing() {
-
-
+const Landing = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isSignUpOpen, setisSignUpOpen] = useState(false);
+  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
 
   const openLogin = () => {
     setIsLoginOpen(true);
@@ -18,59 +16,48 @@ function Landing() {
   const closeLogin = () => {
     setIsLoginOpen(false);
   };
-  
+
   const openSignUp = () => {
-    setisSignUpOpen(true);
+    setIsSignUpOpen(true);
   };
 
   const closeSignUp = () => {
-    setisSignUpOpen(false);
+    setIsSignUpOpen(false);
   };
- 
-
   return (
-    
-    <div className=" mx-auto"> {/* Centering the main div */}
-    
-        <header className="mt-8 ">
-        <nav className="flex justify-between items-center mx-40">
-      <img src={Logo} alt="" />
-      <div className="flex gap-4">
-        <button
-          className="px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-primaryhover"
-          onClick={openLogin}
-        >
-          Log In
-        </button>
-        {isLoginOpen && <LoginModal closeModalFn={closeLogin} />}
-      </div>
-    </nav>
-    <section className="mt-[3.4rem] flex justify-center">
-        <div className="flex flex-col gap-40 md:items-center justify-between md:flex-row">
-          <div className="flex flex-col items-start "> {/* Adjusted space-y */}
-            <h1 className="text-4xl font-semibold mb-4">
-              Task Management <br /> & Collaboration <br /> Made Easy
-            </h1>
-            <p className="text-md mb-8">
-              Organize your work, boost productivity,
-              <br /> and stay on top of your tasks.
-            </p>
-            <button
-              className="mt-5 px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-primaryhover"
-              onClick={openSignUp}
-            >
-              Get Started
-            </button>
-            {isSignUpOpen && <SignUpModal closeSignUpFn={closeSignUp} />}
-          </div>
-          <img className="h-[27rem] w-[27rem] ml-4" src={HeroImg} alt="" /> {/* Adjusted margin */}
+    <div className="landing-page">
+      <MotionConfig reducedMotion="user">
+        <div className="relative flex flex-col justify-center">
+          <Navbar
+            closeLoginFn={closeLogin}
+            closeSignUpFn={closeSignUp}
+            isLoginOpen={isLoginOpen}
+            isSignUpOpen={isSignUpOpen}
+            openLoginFn={openLogin}
+            openSignUpFn={openSignUp}
+          />
+          <Hero />
         </div>
-      </section>
-    
-        </header>
-     
+        <Showcase />
+        <Pricing />
+        <div className="mx-auto mt-32 mb-32 flex flex-col items-center justify-evenly md:mt-36 md:flex-row  bg-no-repeat bg-contain bg-bg-footer-squiggle">
+          <CountUp
+            image={CommunityIcon}
+            maxCount={100}
+            unit="%"
+            text="Boosting Productivity"
+          />
+          <CountUp
+            image={MessagesIcon}
+            maxCount={110}
+            unit="%"
+            text="Increased Collaboration"
+            className="mt-20 md:mt-0"
+          />
+        </div>
+        <Footer />
+      </MotionConfig>
     </div>
   );
-}
-
+};
 export default Landing;

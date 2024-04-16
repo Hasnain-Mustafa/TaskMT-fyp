@@ -1,6 +1,6 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Kanban,Calendar } from '../pages'
+import { Kanban, Calendar } from '../pages';
 import getStatusColor from '../utils/utils';
 const Tab = ({ label, value, selected, onSelect }) => (
   <div
@@ -20,7 +20,7 @@ const TabbedBar = ({ tabs, defaultTab }) => {
   const [selectedTab, setSelectedTab] = useState(defaultTab);
 
   return (
-    <div >
+    <div>
       <div className="flex gap-4 ml-20 mt-10 ">
         {tabs.map((tab) => (
           <Tab
@@ -42,23 +42,24 @@ const TabbedBar = ({ tabs, defaultTab }) => {
 };
 
 const TabbedMenu = () => {
- 
+  const { userInfo } = useSelector((state) => state.auth);
   const { tasks } = useSelector((state) => state.tasks);
-  const mapTasksToCalendarFormat = (tasks) => ({
+
+
     
- 
-  
-    Id: tasks.id,
-    Subject: tasks.Title,
-    Description: tasks.Summary,
-    StartTime: tasks.startDate.toLocaleString(),
-    EndTime: tasks.dueDate.toLocaleString(),
-    Member: tasks.assignee,
-    Color: getStatusColor(tasks.Status)
+
+  const mapTasksToCalendarFormat = (task) => ({
+    Id: task.id,
+    Subject: task.Title || '',
+    Description: task.Summary || '',
+    StartTime: task.startDate ? task.startDate.toLocaleString() : '',
+    EndTime: task.dueDate ? task.dueDate.toLocaleString() : '',
+    Member: userInfo?.name || '',
+    Color: getStatusColor(task.Status) || '',
   });
-  // const calendarTasks = tasks.map(mapTasksToCalendarFormat);
-  const calendarTasks = [...tasks.map(mapTasksToCalendarFormat)];
-  console.log(calendarTasks)
+
+  const calendarTasks = tasks.map(task => mapTasksToCalendarFormat(task));
+
   const tabs = [
     {
       label: 'Kanban',
@@ -68,8 +69,8 @@ const TabbedMenu = () => {
     {
       label: 'Calendar',
       value: 'calendar',
-      content: <Calendar calendarTasks={calendarTasks}/>, // Render Calendar component
-    }
+      content: <Calendar calendarTasks={calendarTasks} />, // Render Calendar component
+    },
   ];
 
   return <TabbedBar tabs={tabs} defaultTab="kanban" />;

@@ -8,8 +8,8 @@ import { TooltipComponent } from '@syncfusion/ej2-react-popups';
 import { Navbar, Sidebar, ThemeSettings, TabbedMenu } from './components';
 import { RoomPage } from './pages/RoomPage';
 import { PreJoinPage } from './pages/PreJoinPage';
-import Editor from './pages/Editor';
-import { Projects,Portfolio, Ecommerce, Orders, Employees, Thread, Line, Area, Bar, Pie, Financial, ColorMapping, Pyramid, Stacked} from './pages';
+
+import { Projects,Portfolio, Dashboard, Thread, Bar} from './pages';
 import { useStateContext } from './contexts/ContextProvider';
 import './App.css';
 
@@ -54,13 +54,10 @@ const AuthenticatedRoutes = () => {
       
           <Routes>
             <Route path="/projects" element={<Projects />} />
-            <Route path="/" element={<Ecommerce />} /> 
-            <Route path="/dashboard" element={<Ecommerce />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/employees" element={<Employees />} />
+            <Route path="/" element={<Dashboard />} /> 
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/portfolio" element={<Portfolio />} />
             <Route path="/menu-tab" element={<TabbedMenu />} />
-            <Route path="/editor" element={<Editor />} />
             <Route path='*' element={<Navigate to='/' replace />} />
             <Route
               path="/thread"
@@ -68,14 +65,8 @@ const AuthenticatedRoutes = () => {
             />
             <Route path="/prejoin" element={<PreJoinPage />} />
             <Route path="/room" element={<RoomPage />} />
-            <Route path="/line" element={<Line />} />
-            <Route path="/area" element={<Area />} />
             <Route path="/bar" element={<Bar />} />
-            <Route path="/pie" element={<Pie />} />
-            <Route path="/financial" element={<Financial />} />
-            <Route path="/color-mapping" element={<ColorMapping />} />
-            <Route path="/pyramid" element={<Pyramid />} />
-            <Route path="/stacked" element={<Stacked />} />
+            
           </Routes>
         </div>
       </div>

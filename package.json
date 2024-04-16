@@ -23,11 +23,13 @@
     "@syncfusion/ej2-react-richtexteditor": "^19.4.50",
     "@syncfusion/ej2-react-schedule": "^19.4.50",
     "date-fns": "^2.30.0",
+    "framer-motion": "^11.1.1",
     "graphql": "^16.8.1",
     "graphql-request": "^6.1.0",
     "livekit-client": "^0.16.2",
     "livekit-react": "^0.6.2",
     "livekit-server-sdk": "^2.1.1",
+    "lottie-react": "^2.4.0",
     "react": "^18.2.0",
     "react-chat-engine-advanced": "^0.1.28",
     "react-circular-progressbar": "^2.1.0",
@@ -73,6 +75,5 @@
     "eslint-plugin-react-hooks": "^4.3.0",
     "postcss": "^8.4.6",
     "tailwindcss": "^3.0.19"
- 
   }
 }

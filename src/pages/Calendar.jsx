@@ -21,8 +21,8 @@ import { Header } from '../components';
 const PropertyPane = (props) => <div className="mt-5">{props.children}</div>;
 
 const Calendar = ({ calendarTasks }) => {
-console.log("in calendar")
-console.log(calendarTasks)
+
+
 
   const [scheduleObj, setScheduleObj] = useState();
 

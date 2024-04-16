@@ -3,10 +3,10 @@
 .sidebar {
   box-shadow: rgb(113 122 131 / 11%) 0px 7px 30px 0px;
 }
-.nav-item,
+/* .nav-item,
 .navbar {
   z-index: 10000;
-}
+} */
 @media  screen and (max-width:800px) {
   .sidebar{
     z-index: 10000000;
@@ -68,3 +68,12 @@
   display: inline-block;
 }
 
+/* Add this to your CSS file
+@keyframes completionAnimation {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.complete-animation {
+  animation: completionAnimation 2s ease forwards; /* Adjust duration as needed */
+/* } */ 

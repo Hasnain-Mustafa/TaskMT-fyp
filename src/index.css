@@ -17,10 +17,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
  
-    margin: 0;
-    /* overflow: hidden; */
-    height: 100vh;
-    font-size: 12px;
+
   }
   
   code {
@@ -41,7 +38,7 @@ body {
     height: 100vh;
     padding: 32px;
   }
-  
+   
   .prejoin {
     display: grid;
     align-items: center;
@@ -189,4 +186,12 @@ body {
     margin-left: 0.2rem;
     font-size: 0.9rem;
   }
+  /* @keyframes completionAnimation {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  
+  .complete-animation {
+    animation: completionAnimation 2s ease forwards; /* Adjust duration as needed */
+  /* } */
   
