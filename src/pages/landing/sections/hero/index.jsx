@@ -6,7 +6,7 @@ import Lottie from "lottie-react";
 
 export const Hero = () => {
   return (
-    <section className=" mt-[5rem] mb-[10rem] p-[7.5rem] text-white relative flex flex-col justify-center flex-1 gap-8 bg-main-dark-bg">
+    <section className="mt-[5rem] mb-[10rem] p-[7.5rem] text-white relative flex flex-col justify-center flex-1 gap-8 bg-main-dark-bg bg-no-repeat bg-hero-squiggle bg-invert">
       <div className="flex flex-col items-center gap-8 h-[85vh] p-5 md:max-w-[28.563rem] md:m-auto md:bg-bg-hero-squiggle md:bg-contain bg-no-repeat bg-center ">
         <motion.h1
           {...framer_title}
@@ -30,6 +30,8 @@ export const Hero = () => {
           <Lottie animationData={scrollAnimation} loop={true} />
         </motion.a>
       </div>
+      <div className="absolute top-[50] left-0 w-[30%] h-full bg-no-repeat  bg-illustration-hero-left"></div>
+      <div className="absolute  top-[50] right-0 w-[30%] h-full bg-no-repeat  bg-illustration-hero-right"></div>
     </section>
   );
 };
