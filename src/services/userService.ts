@@ -171,7 +171,7 @@ export const deleteProject = async (_: any, { projectId }: { projectId: string }
       where: { id: projectId }
     });
 
-    return `Project with ID ${projectId} and associated tasks has been deleted successfully.`;
+    return {id : projectId};
   } catch (error) {
     console.error('Error deleting project:', error);
     throw new Error('Failed to delete project');
@@ -350,6 +350,7 @@ export const deleteProjectMember = async (
       try {
         const { title, status, summary, type, priority, taskAssigneeEmail, projectId, dueDate, startDate } = payload;
     console.log(projectId)
+   
         // Fetch the project to verify taskAssigneeEmail
         const project = await prismaClient.project.findUnique({
           where: { id: projectId }
@@ -387,8 +388,23 @@ export const deleteProjectMember = async (
             taskAssignee: { connect: { email: taskAssigneeEmail } } // Connect by user id
           }
         });
-    
-        return createdTask;
+        // Restructure the response object
+    const response = {
+      id: createdTask.id,
+      Title: createdTask.title,
+      Status: createdTask.status,
+      Summary: createdTask.summary,
+      type: createdTask.type,
+      priority: createdTask.priority,
+      dueDate: createdTask.dueDate,
+      startDate: createdTask.startDate,
+      taskAssigneeId: createdTask.taskAssigneeId,
+      projectId: createdTask.projectId
+    };
+
+    console.log(response);
+    return response;
+      
       } catch (error) {
         console.error('Error creating task:', error);
         throw new Error('Failed to create task');
@@ -412,7 +428,7 @@ export const deleteProjectMember = async (
           where: { id: taskId }
         });
     
-        return `Task with ID ${taskId} has been deleted successfully.`;
+        return { id: taskId };
       } catch (error) {
         console.error('Error deleting task:', error);
         throw new Error('Failed to delete task');
@@ -432,8 +448,8 @@ export const deleteProjectMember = async (
           throw new Error(`Task with ID ${taskId} not found.`);
         }
     
-        // Fetch the project to verify taskAssigneeEmail
         if (taskAssigneeId) {
+          // Fetch the project to verify taskAssigneeId
           const projectId = existingTask.projectId;
     
           const project = await prismaClient.project.findUnique({
@@ -451,8 +467,8 @@ export const deleteProjectMember = async (
             throw new Error(`User with ID ${taskAssigneeId} is not assigned to the project.`);
           }
     
-          // Update the task
-          await prismaClient.task.update({
+          // Update the task with taskAssignee and project
+          const updatedTask = await prismaClient.task.update({
             where: { id: taskId },
             data: {
               ...updatedFields,
@@ -460,15 +476,41 @@ export const deleteProjectMember = async (
               project: { connect: { id: projectId } }
             }
           });
+    
+          // Return the updated task
+          return {
+            id: updatedTask.id,
+            Title: updatedTask.title,
+            Status: updatedTask.status,
+            Summary: updatedTask.summary,
+            type: updatedTask.type,
+            priority: updatedTask.priority,
+            dueDate: updatedTask.dueDate,
+            startDate: updatedTask.startDate,
+            taskAssigneeId: updatedTask.taskAssigneeId,
+            projectId: updatedTask.projectId
+          };
         } else {
           // Update the task without updating the project or taskAssignee
-          await prismaClient.task.update({
+          const updatedTask = await prismaClient.task.update({
             where: { id: taskId },
             data: updatedFields
           });
-        }
     
-        return `Task with ID ${taskId} has been updated successfully.`;
+          // Return the updated task
+          return {
+            id: updatedTask.id,
+            Title: updatedTask.title,
+            Status: updatedTask.status,
+            Summary: updatedTask.summary,
+            type: updatedTask.type,
+            priority: updatedTask.priority,
+            dueDate: updatedTask.dueDate,
+            startDate: updatedTask.startDate,
+            taskAssigneeId: updatedTask.taskAssigneeId,
+            projectId: updatedTask.projectId
+          };
+        }
       } catch (error) {
         console.error('Error updating task:', error);
         throw new Error('Failed to update task');
@@ -495,10 +537,17 @@ export const generateUserToken = async (payload: UserTokenPayload) => {
 
     // Generating Token with a longer expiration time (e.g., 1 hour)
     const token = JWT.sign({ id: user.id, email: user.email }, JWT_SECRET, {
-      expiresIn: '1h',
+      expiresIn: '9h',
     });
-
-    return token;
+const Token ={
+id :user.id,
+email: user.email,
+name: user.name,
+isManager: user.isManager,
+userToken : token,
+assignedProjectIds : user.assignedProjectIds
+}
+    return Token;
   } catch (err: any) {
     // Handle errors
     throw new Error(`Error generating user token: ${err.message}`);
@@ -584,7 +633,21 @@ export const getAssignedTasks =  async (payload: getAssignedTasksPayload) => {
       }
     });
 
-    return tasks;
+   // Restructure the response to match the desired format
+   const formattedTasks = tasks.map(task => ({
+    id: task.id,
+    Title: task.title,
+    Status: task.status,
+    Summary: task.summary,
+    type: task.type,
+    priority: task.priority,
+    dueDate: task.dueDate,
+    startDate: task.startDate,
+    taskAssigneeId: task.taskAssigneeId,
+    projectId: task.projectId
+  }));
+
+  return formattedTasks;
   } catch (error) {
     console.error('Error fetching tasks by project ID and task assignee ID:', error);
     throw new Error('Failed to fetch tasks by project ID and task assignee ID');

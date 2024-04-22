@@ -6,15 +6,27 @@ exports.typeDefs = `
   
   type Task {
     id: ID!
-    title: String!
-    status: String!
-    summary: String!
+    Title: String!
+    Status: String!
+    Summary: String!
     type: String!
     priority: String!
     dueDate: String!
     startDate: String!
-    taskAssignee: User!
-    project: Project! 
+    taskAssigneeId: String!
+    projectId: String! 
+  }
+  type Tasks {
+    id: ID!
+    Title: String!
+    Status: String!
+    Summary: String!
+    type: String!
+    priority: String!
+    dueDate: String!
+    startDate: String!
+    taskAssigneeId: String
+    projectId: String! 
   }
 
   type User{
@@ -27,4 +39,9 @@ exports.typeDefs = `
     name: String!
     
   }
+  type DeletedTask{
+    id: ID!
+  }
+ 
+
 `;

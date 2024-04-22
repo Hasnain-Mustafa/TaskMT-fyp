@@ -11,7 +11,7 @@ exports.mutations = `
       weeks: String,
       budget: String,
       assigneeEmails: [String]
-      creatorId: ID): String
+      creatorId: ID): Projects
       updateProject(
         projectId: ID!
         title: String
@@ -25,7 +25,7 @@ exports.mutations = `
       
       deleteProject(
         projectId: ID!
-      ): String
+      ): DeletedProject
       deleteProjectMember(
         projectId: ID!
         memberEmail: String!

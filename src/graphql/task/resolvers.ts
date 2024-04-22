@@ -1,5 +1,5 @@
 import { CreateTaskInput,getAllProjectTasks,getProjectTasksPayload,getAssignedTasks,getAssignedTasksPayload } from '../../services/userService';
-import { createTask,deleteTask,updateTask } from '../../services/userService';
+import { createTask,deleteTask,updateTask,getUserById } from '../../services/userService';
 
 const queries = {
   getAllProjectTasks: async (_: any, payload: getProjectTasksPayload) => {
@@ -15,13 +15,26 @@ const queries = {
   getAssignedTasks: async (_: any, payload: getAssignedTasksPayload) => {
     try{
     const res = await getAssignedTasks(payload);
+    console.log(res)
     return res;
     }catch (error) {
       
       console.error('Error fetching assigned tasks:', error);
       throw new Error('Failed to fetch tasks');
     }
-  }
+  },
+  getTaskAssigneeById: async (_: any,  { taskAssigneeId }: { taskAssigneeId: string }) => {
+    try {
+     
+      // Call your data source/service to fetch the user by ID
+      const user = await getUserById(taskAssigneeId);
+      console.log(user)
+      return user;
+    } catch (error) {
+      // Handle errors
+      throw new Error('Failed to fetch user by ID');
+    }
+  },
  
 };
 
@@ -30,7 +43,8 @@ const mutations = {
     try {
       // Call the createTask function from userService.ts
       const res = await createTask(payload);
-      return res.id;
+      console.log(res)
+      return res;
     } catch (error) {
       // Handle any errors that occur during task creation
       console.error('Error creating task:', error);

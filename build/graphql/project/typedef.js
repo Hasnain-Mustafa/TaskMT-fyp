@@ -25,6 +25,12 @@ exports.typeDefs = `
     creatorId: String! 
   }
 
+  type DeletedProject {
+    id: ID!
+    
+  }
+  
+
   type User {
     id: ID!
     name: String!

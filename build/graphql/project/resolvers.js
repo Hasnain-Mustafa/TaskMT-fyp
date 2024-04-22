@@ -40,7 +40,7 @@ const mutations = {
         try {
             // Call the createProject function from userService.ts
             const res = yield (0, userService_2.createProject)(payload);
-            return res.id;
+            return res;
         }
         catch (error) {
             // Handle any errors that occur during project creation

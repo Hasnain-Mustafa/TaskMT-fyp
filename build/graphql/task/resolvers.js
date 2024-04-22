@@ -27,20 +27,34 @@ const queries = {
     getAssignedTasks: (_, payload) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const res = yield (0, userService_1.getAssignedTasks)(payload);
+            console.log(res);
             return res;
         }
         catch (error) {
             console.error('Error fetching assigned tasks:', error);
             throw new Error('Failed to fetch tasks');
         }
-    })
+    }),
+    getTaskAssigneeById: (_, { taskAssigneeId }) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            // Call your data source/service to fetch the user by ID
+            const user = yield (0, userService_2.getUserById)(taskAssigneeId);
+            console.log(user);
+            return user;
+        }
+        catch (error) {
+            // Handle errors
+            throw new Error('Failed to fetch user by ID');
+        }
+    }),
 };
 const mutations = {
     createTask: (_, payload) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             // Call the createTask function from userService.ts
             const res = yield (0, userService_2.createTask)(payload);
-            return res.id;
+            console.log(res);
+            return res;
         }
         catch (error) {
             // Handle any errors that occur during task creation

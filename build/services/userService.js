@@ -126,7 +126,7 @@ const deleteProject = (_, { projectId }) => __awaiter(void 0, void 0, void 0, fu
         yield db_1.prismaClient.project.delete({
             where: { id: projectId }
         });
-        return `Project with ID ${projectId} and associated tasks has been deleted successfully.`;
+        return { id: projectId };
     }
     catch (error) {
         console.error('Error deleting project:', error);
@@ -307,7 +307,21 @@ const createTask = (payload) => __awaiter(void 0, void 0, void 0, function* () {
                 taskAssignee: { connect: { email: taskAssigneeEmail } } // Connect by user id
             }
         });
-        return createdTask;
+        // Restructure the response object
+        const response = {
+            id: createdTask.id,
+            Title: createdTask.title,
+            Status: createdTask.status,
+            Summary: createdTask.summary,
+            type: createdTask.type,
+            priority: createdTask.priority,
+            dueDate: createdTask.dueDate,
+            startDate: createdTask.startDate,
+            taskAssigneeId: createdTask.taskAssigneeId,
+            projectId: createdTask.projectId
+        };
+        console.log(response);
+        return response;
     }
     catch (error) {
         console.error('Error creating task:', error);
@@ -328,7 +342,7 @@ const deleteTask = (_, { taskId }) => __awaiter(void 0, void 0, void 0, function
         yield db_1.prismaClient.task.delete({
             where: { id: taskId }
         });
-        return `Task with ID ${taskId} has been deleted successfully.`;
+        return { id: taskId };
     }
     catch (error) {
         console.error('Error deleting task:', error);
@@ -346,8 +360,8 @@ const updateTask = (_, _c) => __awaiter(void 0, void 0, void 0, function* () {
         if (!existingTask) {
             throw new Error(`Task with ID ${taskId} not found.`);
         }
-        // Fetch the project to verify taskAssigneeEmail
         if (taskAssigneeId) {
+            // Fetch the project to verify taskAssigneeId
             const projectId = existingTask.projectId;
             const project = yield db_1.prismaClient.project.findUnique({
                 where: { id: projectId }
@@ -360,20 +374,45 @@ const updateTask = (_, _c) => __awaiter(void 0, void 0, void 0, function* () {
             if (!assigneeExists) {
                 throw new Error(`User with ID ${taskAssigneeId} is not assigned to the project.`);
             }
-            // Update the task
-            yield db_1.prismaClient.task.update({
+            // Update the task with taskAssignee and project
+            const updatedTask = yield db_1.prismaClient.task.update({
                 where: { id: taskId },
                 data: Object.assign(Object.assign({}, updatedFields), { taskAssignee: { connect: { id: taskAssigneeId } }, project: { connect: { id: projectId } } })
             });
+            // Return the updated task
+            return {
+                id: updatedTask.id,
+                Title: updatedTask.title,
+                Status: updatedTask.status,
+                Summary: updatedTask.summary,
+                type: updatedTask.type,
+                priority: updatedTask.priority,
+                dueDate: updatedTask.dueDate,
+                startDate: updatedTask.startDate,
+                taskAssigneeId: updatedTask.taskAssigneeId,
+                projectId: updatedTask.projectId
+            };
         }
         else {
             // Update the task without updating the project or taskAssignee
-            yield db_1.prismaClient.task.update({
+            const updatedTask = yield db_1.prismaClient.task.update({
                 where: { id: taskId },
                 data: updatedFields
             });
+            // Return the updated task
+            return {
+                id: updatedTask.id,
+                Title: updatedTask.title,
+                Status: updatedTask.status,
+                Summary: updatedTask.summary,
+                type: updatedTask.type,
+                priority: updatedTask.priority,
+                dueDate: updatedTask.dueDate,
+                startDate: updatedTask.startDate,
+                taskAssigneeId: updatedTask.taskAssigneeId,
+                projectId: updatedTask.projectId
+            };
         }
-        return `Task with ID ${taskId} has been updated successfully.`;
     }
     catch (error) {
         console.error('Error updating task:', error);
@@ -397,9 +436,17 @@ const generateUserToken = (payload) => __awaiter(void 0, void 0, void 0, functio
         }
         // Generating Token with a longer expiration time (e.g., 1 hour)
         const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, JWT_SECRET, {
-            expiresIn: '1h',
+            expiresIn: '9h',
         });
-        return token;
+        const Token = {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            isManager: user.isManager,
+            userToken: token,
+            assignedProjectIds: user.assignedProjectIds
+        };
+        return Token;
     }
     catch (err) {
         // Handle errors
@@ -486,7 +533,20 @@ const getAssignedTasks = (payload) => __awaiter(void 0, void 0, void 0, function
                 taskAssigneeId: taskAssigneeId
             }
         });
-        return tasks;
+        // Restructure the response to match the desired format
+        const formattedTasks = tasks.map(task => ({
+            id: task.id,
+            Title: task.title,
+            Status: task.status,
+            Summary: task.summary,
+            type: task.type,
+            priority: task.priority,
+            dueDate: task.dueDate,
+            startDate: task.startDate,
+            taskAssigneeId: task.taskAssigneeId,
+            projectId: task.projectId
+        }));
+        return formattedTasks;
     }
     catch (error) {
         console.error('Error fetching tasks by project ID and task assignee ID:', error);

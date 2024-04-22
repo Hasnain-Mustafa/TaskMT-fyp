@@ -6,9 +6,16 @@ exports.typeDefs = `#graphql
         id: ID!
         email:String!
         name: String!
-        password: String!
         isManager: String!
         salt: String
+        assignedProjectIds: [String!] 
+    }
+    type Token {
+        id: ID!
+        email:String!
+        name: String!
+        isManager :String!
+        userToken: String!
         assignedProjectIds: [String!] 
     }
    
