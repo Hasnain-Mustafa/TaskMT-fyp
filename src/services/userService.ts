@@ -1,19 +1,31 @@
 import { createHmac, randomBytes } from 'crypto';
 import { prismaClient } from '../lib/db';
 import JWT from 'jsonwebtoken';
+import { transferableAbortSignal } from 'util';
 
 export interface signUpTypes {
   email: string;
   name: string;
   password: string;
   isManager: boolean;
+  photoURL: string;
 }
 
 export interface UserTokenPayload {
   email: string;
   password: string;
 }
+export interface UpdatePicturePayload {
+  email: string;
+  photoURL: string;
+}
 
+export interface signUpWithOAuthTypes {
+  email: string;
+  name: string;
+  isManager: boolean;
+  photoURL: string;
+}
 export interface getProjectsPayload{
   creatorId: string
 }
@@ -24,12 +36,49 @@ export interface CreateProjectInput {
   title: string;
   status: string;
   summary: string;
-  weeks: string;
-  budget: string;
+  weeks: number;
+  budget: number;
   assigneeEmails: string[];
   creatorId: string;
   
 }
+// interface Chat {
+//   image: string;
+//   message: string;
+//   desc: string;
+//   time: string;
+// }
+export interface ChatPayload{
+ 
+  chat: {
+    userId: string;
+    image: string;
+    sender: string;
+    message: string;
+    desc: string;
+    time: string;
+  }
+}
+interface Notification {
+  image: string;
+  message: string;
+  desc: string;
+  time: string;
+}
+export interface NotificationPayload{
+  userId: string
+  notification: Notification[]
+}
+interface Goal {
+ 
+  text: string;
+isCompleted: boolean
+}
+export interface GoalPayload{
+  userId: string
+  goal: Goal[]
+}
+
 
 export interface CreateTaskInput {
   title: string;
@@ -41,7 +90,8 @@ export interface CreateTaskInput {
   startDate: string;
   taskAssigneeEmail: string;
   projectId: string;
-  
+  taskCreatorId: string
+  turnedInAt: string
 }
 export interface getProjectTasksPayload{
   projectId: string
@@ -49,6 +99,11 @@ export interface getProjectTasksPayload{
 export interface getAssignedTasksPayload{
   projectId: string;
   taskAssigneeId:string
+
+}
+export interface getCreatedTasksPayload{
+  projectId: string;
+  taskCreatorId:string
 
 }
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -66,8 +121,13 @@ const generateHash = (salt: string, password: string) => {
 
 // User Signup
 export const signUpUser = async (payload: signUpTypes) => {
-  const { email, name, password, isManager } = payload;
-
+  const { email, name, password, isManager,photoURL } = payload;
+  try{
+    const user = await getUserByEmail(email);
+    if (user) {
+      throw new Error("User already exists!");
+    }
+  
   const salt = randomBytes(32).toString('hex');
   const hashedPassword = generateHash(salt, password);
 
@@ -78,32 +138,60 @@ export const signUpUser = async (payload: signUpTypes) => {
       password: hashedPassword,
       isManager,
       salt,
+      photoURL
     },
   });
+}
+   catch (err: any) {
+    // Handle errors
+    throw err;
+  }
 };
+function isValidEmail(email:string) {
+  const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return emailRegex.test(email);
+}
 
 export const createProject = async (payload: CreateProjectInput) => {
-  try {
-    const { title, status, summary, weeks, budget, assigneeEmails, creatorId } = payload;
+  const { title, status, summary, weeks, budget, assigneeEmails, creatorId } = payload;
+  let allUsersFound = true;
+  let managerAssigned = false;
+  let assigneeIds = []; // Store user IDs of assignees
 
-    let allUsersFound = true;
+  for (const email of assigneeEmails) {
+    console.log("Validating email:", email);
 
-    // Check if all users exist
-    await Promise.all(assigneeEmails.map(async (assigneeEmail) => {
-      const user = await prismaClient.user.findUnique({
-        where: { email: assigneeEmail }
-      });
-      if (!user) {
-        console.error(`User with email ${assigneeEmail} not found.`);
-        allUsersFound = false;
-      }
-    }));
-
-    if (!allUsersFound) {
-      throw new Error('Not all users were found. Project creation aborted.');
+    if (!isValidEmail(email)) {
+      throw new Error(`Invalid email format: ${email}`);
     }
 
-    // Create the project
+    console.log("Searching for user with email:", email);
+    const user = await prismaClient.user.findUnique({
+      where: { email }
+    });
+    console.log("User found:", user);
+
+    if (!user) {
+      allUsersFound = false;
+      throw new Error(`User with email ${email} not found.`);
+    } else if (user.isManager) {
+      managerAssigned = true;
+      throw new Error(`User with email ${email} is a manager and cannot be assigned to projects.`);
+    } else {
+      assigneeIds.push(user.id); // Collect user ID
+    }
+  }
+
+  if (!allUsersFound) {
+    throw new Error('One or more assignees not found.');
+  }
+
+  if (managerAssigned) {
+    throw new Error('Project managers cannot be assigned to projects.');
+  }
+
+  // Create the project
+  try {
     const createdProject = await prismaClient.project.create({
       data: {
         title,
@@ -111,22 +199,77 @@ export const createProject = async (payload: CreateProjectInput) => {
         summary,
         weeks,
         budget,
-        creator: { connect: { id: creatorId } }, // Connect the creator directly
-        assignees: { connect: assigneeEmails.map(email => ({ email })) } // Connect assignees directly by email
+        creator: { connect: { id: creatorId } },
+        assignees: {
+          connect: assigneeIds.map(id => ({ id })) // Connect assignees by their IDs
+        }
       },
-      
     });
-    
-
+    console.log('Project created:', createdProject);
     return createdProject;
-
-  } catch (error) {
-    console.error('Error creating project:', error);
-    throw new Error('Failed to create project');
+  } catch (err) {
+    throw err;
   }
 };
 
+export const deleteProjects = async (_: any, { projectIds }: { projectIds: string[] }) => {
+  try {
+    // Retrieve all projects that match the array of projectIds
+    const existingProjects = await prismaClient.project.findMany({
+      where: { id: { in: projectIds } }
+    });
 
+    // Map of existing project IDs for quick lookup
+    const existingProjectIds = new Set(existingProjects.map(project => project.id));
+
+    // Filter out non-existent projects to avoid errors
+    const validProjectIds = projectIds.filter(id => existingProjectIds.has(id));
+
+    if (validProjectIds.length === 0) {
+      throw new Error('No valid project IDs found.');
+    }
+
+    // Retrieve all tasks associated with the valid projects
+    const tasksInProjects = await prismaClient.task.findMany({
+      where: { projectId: { in: validProjectIds } }
+    });
+
+    // Delete all tasks associated with these projects
+    if (tasksInProjects.length > 0) {
+      await Promise.all(tasksInProjects.map(async (task) => {
+        await prismaClient.task.delete({
+          where: { id: task.id }
+        });
+      }));
+    }
+
+    // Retrieve users with any of the projects in assignedProjectIds
+    const usersWithProjects = await prismaClient.user.findMany({
+      where: { assignedProjectIds: { hasSome: validProjectIds } }
+    });
+
+    // Update each user document to remove the projects from assignedProjectIds
+    await Promise.all(usersWithProjects.map(async (user) => {
+      const updatedProjectIds = user.assignedProjectIds.filter(id => !validProjectIds.includes(id));
+      await prismaClient.user.update({
+        where: { id: user.id },
+        data: { assignedProjectIds: { set: updatedProjectIds } }
+      });
+    }));
+
+    // After tasks and users have been updated, delete the projects themselves
+    await Promise.all(validProjectIds.map(async (projectId) => {
+      await prismaClient.project.delete({
+        where: { id: projectId }
+      });
+    }));
+
+    return { ids: validProjectIds }; // Return the IDs of deleted projects
+  } catch (error) {
+    console.error('Error deleting projects:', error);
+    throw new Error('Failed to delete projects');
+  }
+};
 
 export const deleteProject = async (_: any, { projectId }: { projectId: string }) => {
   try {
@@ -348,7 +491,7 @@ export const deleteProjectMember = async (
     // console.log(projectsCreatedByUser);
     export const createTask = async (payload: CreateTaskInput) => {
       try {
-        const { title, status, summary, type, priority, taskAssigneeEmail, projectId, dueDate, startDate } = payload;
+        const { title, status, summary, type, priority, taskAssigneeEmail, projectId, dueDate, startDate , taskCreatorId,turnedInAt} = payload;
     console.log(projectId)
    
         // Fetch the project to verify taskAssigneeEmail
@@ -384,8 +527,11 @@ export const deleteProjectMember = async (
             priority,
             dueDate,
             startDate,
+            turnedInAt,
             project: { connect: { id: projectId } },
-            taskAssignee: { connect: { email: taskAssigneeEmail } } // Connect by user id
+            taskAssignee: { connect: { email: taskAssigneeEmail } }, // Connect by user id
+            taskCreator: { connect: { id : taskCreatorId } }
+         
           }
         });
         // Restructure the response object
@@ -399,15 +545,16 @@ export const deleteProjectMember = async (
       dueDate: createdTask.dueDate,
       startDate: createdTask.startDate,
       taskAssigneeId: createdTask.taskAssigneeId,
-      projectId: createdTask.projectId
+      projectId: createdTask.projectId,
+      taskCreatorId: createdTask.taskCreatorId
     };
 
     console.log(response);
     return response;
       
       } catch (error) {
-        console.error('Error creating task:', error);
-        throw new Error('Failed to create task');
+        
+        throw error;
       }
     };
     
@@ -488,7 +635,10 @@ export const deleteProjectMember = async (
             dueDate: updatedTask.dueDate,
             startDate: updatedTask.startDate,
             taskAssigneeId: updatedTask.taskAssigneeId,
-            projectId: updatedTask.projectId
+            projectId: updatedTask.projectId,
+            taskCreatorId : updatedTask.taskCreatorId,
+            turnedInAt :updatedTask.turnedInAt
+
           };
         } else {
           // Update the task without updating the project or taskAssignee
@@ -508,7 +658,9 @@ export const deleteProjectMember = async (
             dueDate: updatedTask.dueDate,
             startDate: updatedTask.startDate,
             taskAssigneeId: updatedTask.taskAssigneeId,
-            projectId: updatedTask.projectId
+            projectId: updatedTask.projectId,
+            taskCreatorId : updatedTask.taskCreatorId,
+            turnedInAt :updatedTask.turnedInAt
           };
         }
       } catch (error) {
@@ -545,7 +697,9 @@ email: user.email,
 name: user.name,
 isManager: user.isManager,
 userToken : token,
-assignedProjectIds : user.assignedProjectIds
+assignedProjectIds : user.assignedProjectIds,
+photoURL: user.photoURL,
+
 }
     return Token;
   } catch (err: any) {
@@ -572,8 +726,8 @@ export const getUserById = (id: string) => {
 
 export const getAllProjects = async (payload: getProjectsPayload) => {
   try {
-    const {creatorId} =payload;
-    console.log(creatorId);
+    const { creatorId } = payload;
+
     // Find all projects created by the user with the provided creatorId
     const projects = await prismaClient.project.findMany({
       where: {
@@ -581,12 +735,58 @@ export const getAllProjects = async (payload: getProjectsPayload) => {
       }
     });
 
-    return projects;
+    // Transform the projects array to include assignee details
+    const transformedProjects = await Promise.all(projects.map(async (project) => {
+      // Extract assigneeIds from the project
+      const { assigneeIds, ...projectData } = project;
+
+      // Fetch user details for each assigneeId
+      const assigneeDetails = await Promise.all(assigneeIds.map(async (assigneeId) => {
+        const user = await prismaClient.user.findUnique({
+          where: {
+            id: assigneeId
+          },
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        });
+        return user;
+      }));
+
+      // Combine projectData with the transformed assignees array
+      return {
+        ...projectData,
+        assigneeDetails
+      };
+    }));
+
+    return transformedProjects; // Return the transformed projects array
+
   } catch (error) {
     console.error('Error fetching projects by creator ID:', error);
     throw new Error('Failed to fetch projects by creator ID');
   }
 };
+
+// export const getAllProjects = async (payload: getProjectsPayload) => {
+//   try {
+//     const {creatorId} =payload;
+//     console.log(creatorId);
+//     // Find all projects created by the user with the provided creatorId
+//     const projects = await prismaClient.project.findMany({
+//       where: {
+//         creatorId
+//       }
+//     });
+
+//     return projects;
+//   } catch (error) {
+//     console.error('Error fetching projects by creator ID:', error);
+//     throw new Error('Failed to fetch projects by creator ID');
+//   }
+// };
 
 export const getAllProjectsAssigned = async (payload: getAssignedProjectsPayload) => {
   try {
@@ -599,7 +799,36 @@ export const getAllProjectsAssigned = async (payload: getAssignedProjectsPayload
         }
       }
     });
-    return projects;
+   // Transform the projects array to include assignee details
+   const transformedProjects = await Promise.all(projects.map(async (project) => {
+    // Extract assigneeIds from the project
+  
+    const { assigneeIds, ...projectData } = project;
+
+    // Fetch user details for each assigneeId
+    const assigneeDetails = await Promise.all(assigneeIds.map(async (assigneeId) => {
+      const user = await prismaClient.user.findUnique({
+        where: {
+          id: assigneeId
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      });
+      return user;
+    }));
+
+    // Combine projectData with the transformed assignees array
+    return {
+      ...projectData,
+      assigneeDetails
+    };
+  }));
+
+  return transformedProjects; // Return the transformed projects array
+
   } catch (error) {
     console.error('Error fetching projects by assignee ID:', error);
     throw new Error('Failed to fetch projects by assignee ID');
@@ -622,6 +851,39 @@ try {
   throw new Error('Failed to fetch tasks by project ID');
 }
 };
+export const getCreatedTasks =  async (payload: getCreatedTasksPayload) => {
+  const{projectId,taskCreatorId}=payload;
+  try {
+    // Find all tasks where projectId and taskAssigneeId match the provided values
+    const tasks = await prismaClient.task.findMany({
+      where: {
+        projectId: projectId,
+        taskCreatorId: taskCreatorId
+      }
+    });
+
+   // Restructure the response to match the desired format
+   const formattedTasks = tasks.map(task => ({
+    id: task.id,
+    Title: task.title,
+    Status: task.status,
+    Summary: task.summary,
+    type: task.type,
+    priority: task.priority,
+    dueDate: task.dueDate,
+    startDate: task.startDate,
+    taskAssigneeId: task.taskAssigneeId,
+    projectId: task.projectId,
+    taskCreatorId: task.taskCreatorId
+  }));
+
+  return formattedTasks;
+  } catch (error) {
+    console.error('Error fetching tasks by project ID and task creator ID:', error);
+    throw new Error('Failed to fetch tasks by project ID and task creator ID');
+  }
+};
+
 export const getAssignedTasks =  async (payload: getAssignedTasksPayload) => {
   const{projectId,taskAssigneeId}=payload;
   try {
@@ -644,7 +906,9 @@ export const getAssignedTasks =  async (payload: getAssignedTasksPayload) => {
     dueDate: task.dueDate,
     startDate: task.startDate,
     taskAssigneeId: task.taskAssigneeId,
-    projectId: task.projectId
+    projectId: task.projectId,
+    taskCreatorId: task.taskCreatorId,
+    turnedInAt: task.turnedInAt
   }));
 
   return formattedTasks;
@@ -653,4 +917,500 @@ export const getAssignedTasks =  async (payload: getAssignedTasksPayload) => {
     throw new Error('Failed to fetch tasks by project ID and task assignee ID');
   }
 };
+export const addNotifications = async (payload: NotificationPayload) => {
+  const { userId, notification } = payload;
+  try {
+    // Add each notification to the database with the userId
+    const results = await Promise.all(
+      notification.map(notification =>
+        prismaClient.notification.create({
+          data: {
+            ...notification,
+            userId: userId
+          }
+        })
+      )
+    );
 
+    console.log(results[0])
+   
+
+  return results[0]
+
+  } catch (error) {
+    console.error('Error adding notifications:', error);
+    throw new Error('Failed to add notifications');
+  }
+};
+export const addChats = async (payload: ChatPayload) => {
+  const { chat } = payload;
+  console.log(chat)
+  try {
+
+     const results = await 
+        prismaClient.chat.create({
+          data: {
+            ...chat,
+          
+          }
+        })
+      
+   
+    // // Add each chat to the database with the userId
+    // const results = await 
+    //     prismaClient.chat.create({
+    //       data: {
+    //         ...chat,
+    //         userId: userId
+    //       }
+    //     })
+     
+    
+
+    console.log(results)
+   
+
+  return results
+
+  } catch (error) {
+    console.error('Error adding chats:', error);
+    throw new Error('Failed to add chats');
+  }
+};
+export const getMemberById = async ({ userId }: { userId: string }) => {
+ 
+  try {
+    // Find all tasks where projectId matches the provided projectId
+    const user= await prismaClient.user.findUnique({
+      where: {
+        id: userId
+      }
+    });
+  
+    return user;
+  } catch (error) {
+    
+    throw error
+  }
+  };
+export const getChats = async ({ userId }: { userId: string }) => {
+ 
+ try {
+   // Find all tasks where projectId matches the provided projectId
+   const chats= await prismaClient.chat.findMany({
+     where: {
+       userId: userId
+     }
+   });
+ 
+   return chats;
+ } catch (error) {
+   
+   throw error
+ }
+ };
+ export const getNotifications = async ({ userId }: { userId: string }) => {
+ 
+  try {
+    // Find all tasks where projectId matches the provided projectId
+    const chats= await prismaClient.notification.findMany({
+      where: {
+        userId: userId
+      }
+    });
+  
+    return chats;
+  } catch (error) {
+    
+    throw error
+  }
+  };
+ export const getGoals = async ({ userId }: { userId: string }) => {
+ 
+  try {
+    // Find all tasks where projectId matches the provided projectId
+    const goals= await prismaClient.goal.findMany({
+      where: {
+        userId: userId
+      }
+    });
+  
+    return goals;
+  } catch (error) {
+    
+    throw error
+  }
+  };
+ export const getCreatedTasksById = async ({ taskCreatorId }: { taskCreatorId: string }) => {
+  try {
+    const tasks = await prismaClient.task.findMany({
+      where: {
+        taskCreatorId: taskCreatorId,
+        status: {
+          not: 'Close'
+        }
+      }
+    });
+
+   // Restructure the response to match the desired format
+   const formattedTasks = tasks.map(task => ({
+    id: task.id,
+    Title: task.title,
+    Status: task.status,
+    Summary: task.summary,
+    type: task.type,
+    priority: task.priority,
+    dueDate: task.dueDate,
+    startDate: task.startDate,
+    taskAssigneeId: task.taskAssigneeId,
+    projectId: task.projectId,
+    taskCreatorId: task.taskCreatorId,
+    turnedInAt: task.turnedInAt
+  }));
+
+  return formattedTasks;
+   
+  } catch (error) {
+    console.error('Error fetching created tasks:', error);
+    throw new Error('Failed to fetch tasks');
+  }
+};
+
+export const getAssignedTasksById = async ({ taskAssigneeId }: { taskAssigneeId: string }) => {
+  try {
+    const tasks = await prismaClient.task.findMany({
+      where: {
+        taskAssigneeId: taskAssigneeId,
+        status: {
+          not: 'Close'
+        }
+      }
+    });
+
+   // Restructure the response to match the desired format
+   const formattedTasks = tasks.map(task => ({
+    id: task.id,
+    Title: task.title,
+    Status: task.status,
+    Summary: task.summary,
+    type: task.type,
+    priority: task.priority,
+    dueDate: task.dueDate,
+    startDate: task.startDate,
+    taskAssigneeId: task.taskAssigneeId,
+    projectId: task.projectId,
+    taskCreatorId: task.taskCreatorId,
+    turnedInAt: task.turnedInAt
+  }));
+
+  return formattedTasks;
+   
+  } catch (error) {
+    console.error('Error fetching assigned tasks:', error);
+    throw new Error('Failed to fetch tasks');
+  }
+};
+
+export const getAllCreatedTasksById = async ({ taskCreatorId }: { taskCreatorId: string }) => {
+  try {
+    const tasks = await prismaClient.task.findMany({
+      where: {
+        taskCreatorId: taskCreatorId,
+       
+      }
+    });
+
+   // Restructure the response to match the desired format
+   const formattedTasks = tasks.map(task => ({
+    id: task.id,
+    Title: task.title,
+    Status: task.status,
+    Summary: task.summary,
+    type: task.type,
+    priority: task.priority,
+    dueDate: task.dueDate,
+    startDate: task.startDate,
+    taskAssigneeId: task.taskAssigneeId,
+    projectId: task.projectId,
+    taskCreatorId: task.taskCreatorId,
+    turnedInAt: task.turnedInAt
+  }));
+
+  return formattedTasks;
+   
+  } catch (error) {
+    console.error('Error fetching created tasks:', error);
+    throw new Error('Failed to fetch tasks');
+  }
+};
+
+export const getAllAssignedTasksById = async ({ taskAssigneeId }: { taskAssigneeId: string }) => {
+  try {
+    const tasks = await prismaClient.task.findMany({
+      where: {
+        taskAssigneeId: taskAssigneeId,
+       
+      }
+    });
+
+   // Restructure the response to match the desired format
+   const formattedTasks = tasks.map(task => ({
+    id: task.id,
+    Title: task.title,
+    Status: task.status,
+    Summary: task.summary,
+    type: task.type,
+    priority: task.priority,
+    dueDate: task.dueDate,
+    startDate: task.startDate,
+    taskAssigneeId: task.taskAssigneeId,
+    projectId: task.projectId,
+    taskCreatorId: task.taskCreatorId,
+    turnedInAt: task.turnedInAt
+  }));
+
+  return formattedTasks;
+   
+  } catch (error) {
+    console.error('Error fetching assigned tasks:', error);
+    throw new Error('Failed to fetch tasks');
+  }
+};
+
+
+// export const getAllProjects = async (payload: getProjectsPayload) => {
+//   try {
+//     const { creatorId } = payload;
+
+//     // Find all projects created by the user with the provided creatorId
+//     const projects = await prismaClient.project.findMany({
+//       where: {
+//         creatorId
+//       }
+//     });
+
+//     // Transform the projects array to include assignee details
+//     const transformedProjects = await Promise.all(projects.map(async (project) => {
+//       // Extract assigneeIds from the project
+//       const { assigneeIds, ...projectData } = project;
+
+//       // Fetch user details for each assigneeId
+//       const assigneeDetails = await Promise.all(assigneeIds.map(async (assigneeId) => {
+//         const user = await prismaClient.user.findUnique({
+//           where: {
+//             id: assigneeId
+//           },
+//           select: {
+//             id: true,
+//             name: true,
+//             email: true
+//           }
+//         });
+//         return user;
+//       }));
+
+//       // Combine projectData with the transformed assignees array
+//       return {
+//         ...projectData,
+//         assigneeDetails
+//       };
+//     }));
+
+//     return transformedProjects; // Return the transformed projects array
+
+//   } catch (error) {
+//     console.error('Error fetching projects by creator ID:', error);
+//     throw new Error('Failed to fetch projects by creator ID');
+//   }
+// };
+export const addGoals = async (payload: GoalPayload) => {
+  const { userId, goal } = payload;
+  try {
+    // Add each notification to the database with the userId
+    const results = await Promise.all(
+      goal.map(goal =>
+        prismaClient.goal.create({
+          data: {
+            ...goal,
+            userId: userId
+          }
+        })
+      )
+    );
+
+    console.log(results[0])
+   
+
+  return results[0]
+
+  } catch (error) {
+    console.error('Error adding goals:', error);
+    throw new Error('Failed to add goals');
+  }
+};
+export const deleteGoals = async (_: any, { goalId }: { goalId: string }) => {
+  try {
+    console.log("heyyy")
+    // Check if the goal exists
+    const existingGoal = await prismaClient.goal.findUnique({
+      where: { id: goalId }
+    });
+console.log(existingGoal)
+    if (!existingGoal) {
+      throw new Error(`Goal with ID ${goalId} not found.`);
+    }
+
+
+
+    // After deleting tasks and updating users, delete the project itself
+    await prismaClient.goal.delete({
+      where: { id: goalId }
+    });
+
+    return {id : goalId};
+  } catch (error) {
+    console.error('Error deleting goal:', error);
+    throw new Error('Failed to delete goal');
+  }
+};
+export const updateGoals = async (
+  _: any, 
+  { goalId, isCompleted }: { goalId: string; isCompleted: boolean }, 
+  context: any
+) => {
+  try {
+    // Check if the goal exists
+    const existingGoal = await prismaClient.goal.findUnique({
+      where: { id: goalId }
+    });
+
+    if (!existingGoal) {
+      throw new Error(`Goal with ID ${goalId} not found.`);
+    }
+
+    // Update the goal and return the updated goal
+    const updatedGoal = await prismaClient.goal.update({
+      where: { id: goalId },
+      data: { isCompleted }
+    });
+
+    return updatedGoal; // Returning the updated goal object
+  } catch (error) {
+    console.error('Error updating goal:', error);
+    throw new Error('Failed to update goal');
+  }
+};
+export const deleteChats = async ( _: any, { userId }: { userId: string }) => {
+  try {
+    // Check if the user has any chats
+    const count = await prismaClient.chat.count({
+      where: { userId: userId }
+    });
+
+    if (count === 0) {
+      throw new Error(`No chats found for user ID ${userId}.`);
+    }
+
+    // Delete all chats for this user
+    await prismaClient.chat.deleteMany({
+      where: { userId: userId }
+    });
+
+    return { userId: userId };
+  } catch (error) {
+    console.error('Error deleting chats:', error);
+    throw new Error('Failed to delete chats');
+  }
+};
+export const deleteNotifications = async ( _: any, { userId }: { userId: string }) => {
+  try {
+    // Check if the user has any notifications
+    const count = await prismaClient.notification.count({
+      where: { userId: userId }
+    });
+
+    if (count === 0) {
+      throw new Error(`No notifications found for user ID ${userId}.`);
+    }
+
+    // Delete all chats for this user
+    await prismaClient.notification.deleteMany({
+      where: { userId: userId }
+    });
+
+    return { userId: userId };
+  } catch (error) {
+    console.error('Error deleting notifications:', error);
+    throw new Error('Failed to delete notifications');
+  }
+};
+
+export const signUpWithOAuth = async (payload: signUpWithOAuthTypes) => {
+  const { email, name, isManager, photoURL } = payload;
+  try{
+  const user = await getUserByEmail(email);
+
+  if (user) {
+    throw new Error("User already exists!");
+  }
+  return prismaClient.user.create({
+    data: {
+      email,
+      name,
+      password: "",
+      isManager,
+      salt: "",
+      photoURL,
+    },
+  });
+} catch (err: any) {
+  // Handle errors
+  throw err;
+}
+};
+export const generateOAuthToken = async ({ email }: { email: string }) => {
+  try {
+    const user = await getUserByEmail(email);
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Generating Token with a longer expiration time (e.g., 1 hour)
+    const token = JWT.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+      expiresIn: "1s",
+    });
+    const Token = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      isManager: user.isManager,
+      userToken: token,
+      assignedProjectIds: user.assignedProjectIds,
+      photoURL: user.photoURL,
+    };
+    return Token;
+  } catch (err: any) {
+    // Handle errors
+    throw err;
+  }
+};
+export const updateProfilePicture = async (payload: UpdatePicturePayload) => {
+  const { email, photoURL } = payload;
+  try {
+    // const user = await getUserByEmail(email);
+    const updatedUser = await prismaClient.user.update({
+      where: { email },
+      data: {
+        // ...user,
+        photoURL, // Update the profile picture URL
+      },
+    });
+
+    return updatedUser;
+  } catch (error) {
+    // Handle any errors
+    console.error("Error updating profile picture:", error);
+    throw error; // Rethrow the error or handle it gracefully
+  }
+};

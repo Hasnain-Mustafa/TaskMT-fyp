@@ -1,4 +1,4 @@
-import { CreateTaskInput,getAllProjectTasks,getProjectTasksPayload,getAssignedTasks,getAssignedTasksPayload } from '../../services/userService';
+import { CreateTaskInput,getAllProjectTasks,getProjectTasksPayload,getCreatedTasksById,getAssignedTasks,getAllCreatedTasksById,getAssignedTasksPayload, getCreatedTasks,getCreatedTasksPayload ,getAssignedTasksById, getAllAssignedTasksById} from '../../services/userService';
 import { createTask,deleteTask,updateTask,getUserById } from '../../services/userService';
 
 const queries = {
@@ -23,16 +23,71 @@ const queries = {
       throw new Error('Failed to fetch tasks');
     }
   },
-  getTaskAssigneeById: async (_: any,  { taskAssigneeId }: { taskAssigneeId: string }) => {
-    try {
+  getCreatedTasks: async (_: any, payload: getCreatedTasksPayload) => {
+    try{
+    const res = await getCreatedTasks(payload);
+    console.log(res)
+    return res;
+    }catch (error) {
+      
+      console.error('Error fetching created tasks:', error);
+      throw new Error('Failed to fetch tasks');
+    }
+  },
+  // getTaskAssigneeById: async (_: any,  { taskAssigneeId }: { taskAssigneeId: string }) => {
+  //   try {
      
-      // Call your data source/service to fetch the user by ID
-      const user = await getUserById(taskAssigneeId);
-      console.log(user)
-      return user;
-    } catch (error) {
-      // Handle errors
-      throw new Error('Failed to fetch user by ID');
+  //     // Call your data source/service to fetch the user by ID
+  //     const user = await getUserById(taskAssigneeId);
+  //     console.log(user)
+  //     return user;
+  //   } catch (error) {
+  //     // Handle errors
+  //     throw new Error('Failed to fetch user by ID');
+  //   }
+  // },
+  getAssignedTasksById: async (_: any,  { taskAssigneeId }: { taskAssigneeId: string }) => {
+    try{
+    const res = await getAssignedTasksById({taskAssigneeId});
+    console.log(res)
+    return res;
+    }catch (error) {
+      
+      console.error('Error fetching assigned tasks:', error);
+      throw new Error('Failed to fetch tasks');
+    }
+  },
+  getCreatedTasksById: async (_: any,  { taskCreatorId }: { taskCreatorId: string }) => {
+    try{
+    const res = await getAllCreatedTasksById({taskCreatorId});
+    console.log(res)
+    return res;
+    }catch (error) {
+      
+      console.error('Error fetching created tasks:', error);
+      throw new Error('Failed to fetch tasks');
+    }
+  },
+  getAllAssignedTasksById: async (_: any,  { taskAssigneeId }: { taskAssigneeId: string }) => {
+    try{
+    const res = await getAllAssignedTasksById({taskAssigneeId});
+    console.log(res)
+    return res;
+    }catch (error) {
+      
+      console.error('Error fetching assigned tasks:', error);
+      throw new Error('Failed to fetch tasks');
+    }
+  },
+  getAllCreatedTasksById: async (_: any,  { taskCreatorId }: { taskCreatorId: string }) => {
+    try{
+    const res = await getAllCreatedTasksById({taskCreatorId});
+    console.log(res)
+    return res;
+    }catch (error) {
+      
+      console.error('Error fetching created tasks:', error);
+      throw new Error('Failed to fetch tasks');
     }
   },
  
@@ -46,9 +101,8 @@ const mutations = {
       console.log(res)
       return res;
     } catch (error) {
-      // Handle any errors that occur during task creation
-      console.error('Error creating task:', error);
-      throw new Error('Failed to create task');
+    
+      throw new Error(`${error}`);
     }
   },
 

@@ -1,5 +1,5 @@
 import { CreateProjectInput, getProjectsPayload, getAllProjects,getAssignedProjectsPayload,getAllProjectsAssigned } from '../../services/userService';
-import { createProject, updateProject,deleteProject,deleteProjectMember } from '../../services/userService';
+import { createProject, updateProject,deleteProject,deleteProjectMember,deleteProjects } from '../../services/userService';
 
 
 const queries = {
@@ -33,12 +33,13 @@ const mutations = {
       return res;
     } catch (error) {
       // Handle any errors that occur during project creation
-      console.error('Error creating project:', error);
-      throw new Error('Failed to create project');
+   
+      throw new Error( `${error}`);
     }
   },
   updateProject,
   deleteProject,
+  deleteProjects,
   deleteProjectMember
 };
 export const resolvers = { queries,mutations };

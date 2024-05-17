@@ -9,8 +9,8 @@ exports.typeDefs = `
     title: String!
     status: String!
     summary: String!
-    weeks: String!
-    budget: String!
+    weeks: Int!
+    budget: Int!
     assignees: User # Updated to User type
     creator: User! # Updated to User type
   }
@@ -19,9 +19,19 @@ exports.typeDefs = `
     title: String!
     status: String!
     summary: String!
-    weeks: String!
-    budget: String!
-    assigneeIds: [String!] 
+    weeks: Int!
+    budget: Int!
+    assigneeDetails: [User!]
+    creatorId: String! 
+  }
+  type Projectss {
+    id: ID!
+    title: String!
+    status: String!
+    summary: String!
+    weeks: Int!
+    budget: Int!
+    assigneeIds: [String!]
     creatorId: String! 
   }
 
@@ -30,7 +40,10 @@ exports.typeDefs = `
     
   }
   
-
+  type DeletedProjects {
+    ids: [ID!]!
+  }
+  
   type User {
     id: ID!
     name: String!

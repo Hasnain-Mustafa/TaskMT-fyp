@@ -18,6 +18,7 @@ const express4_1 = require("@apollo/server/express4");
 const body_parser_1 = __importDefault(require("body-parser"));
 const cors_1 = __importDefault(require("cors"));
 const userService_1 = require("./services/userService");
+const cronJob_1 = require("./services/cronJob");
 const PORT = Number(process.env.PORT) || 3000;
 function startServer() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -39,6 +40,7 @@ function startServer() {
                 return {}; // Return an empty object if no user is found or there's an error
             }),
         }));
+        (0, cronJob_1.startCronJobs)();
         app.listen(PORT, () => console.log(`Server running on port ${PORT} `));
     });
 }

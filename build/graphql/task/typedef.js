@@ -15,6 +15,7 @@ exports.typeDefs = `
     startDate: String!
     taskAssigneeId: String!
     projectId: String! 
+    turnedInAt: String
   }
   type Tasks {
     id: ID!
@@ -27,7 +28,10 @@ exports.typeDefs = `
     startDate: String!
     taskAssigneeId: String
     projectId: String! 
+    taskCreatorId : String!
+    turnedInAt: String
   }
+  
 
   type User{
     id:ID!

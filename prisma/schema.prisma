@@ -8,18 +8,58 @@ datasource db {
 }
 
 model User {
-  id               String    @id @default(auto()) @map("_id") @db.ObjectId
-  name             String
-  email            String    @unique
-  password         String
-  isManager        Boolean
-  salt             String
-  assignedProjects Project[] @relation(fields: [assignedProjectIds], name: "Assignee",references: [id])
-  assignedProjectIds       String[]  @db.ObjectId
-  createdProjects  Project[] @relation(name: "Creator")
-assignedTasks Task[] @relation(name: "Assignee")
+  id                 String         @id @default(auto()) @map("_id") @db.ObjectId
+  name               String
+  email              String         @unique
+  password           String
+  isManager          Boolean
+  photoURL           String
+  salt               String
+  notifications      Notification[] @relation(name: "Notification")
+  chats              Chat[]         @relation(name: "Chat")
+  goals              Goal[]         @relation(name: "Goal")
+  assignedProjects   Project[]      @relation(fields: [assignedProjectIds], name: "Assignee", references: [id])
+  assignedProjectIds String[]       @db.ObjectId
+  createdProjects    Project[]      @relation(name: "Creator")
+  assignedTasks      Task[]         @relation(name: "Assignee")
+  createdTasks       Task[]         @relation(name: "Creator")
 
   @@map("users")
+}
+
+model Goal {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  text        String
+  isCompleted Boolean
+  user        User    @relation(fields: [userId], name: "Goal", references: [id])
+  userId      String  @db.ObjectId
+
+  @@map("goals")
+}
+
+model Notification {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  image   String
+  message String
+  desc    String
+  time    String
+  user    User   @relation(fields: [userId], name: "Notification", references: [id])
+  userId  String @db.ObjectId
+
+  @@map("notifications")
+}
+
+model Chat {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  image   String
+  message String
+  sender  String
+  desc    String
+  time    String
+  user    User   @relation(fields: [userId], name: "Chat", references: [id])
+  userId  String @db.ObjectId
+
+  @@map("chats")
 }
 
 model Project {
@@ -27,15 +67,13 @@ model Project {
   title       String
   status      String
   summary     String
-  weeks       String
-  budget      String
-  assignees   User[]   @relation(fields: [assigneeIds], name: "Assignee",references: [id])
-  assigneeIds String[] @db.ObjectId @unique
-  creator     User     @relation(fields: [creatorId], name: "Creator",references: [id])
+  weeks       Int
+  budget      Int
+  assignees   User[]   @relation(fields: [assigneeIds], name: "Assignee", references: [id])
+  assigneeIds String[] @unique @db.ObjectId
+  creator     User     @relation(fields: [creatorId], name: "Creator", references: [id])
   creatorId   String   @db.ObjectId
   tasks       Task[]   @relation("ProjectTasks")
-  
-
 
   @@map("projects")
 }
@@ -49,9 +87,12 @@ model Task {
   priority       String
   dueDate        String
   startDate      String
-  taskAssignee   User   @relation(fields: [taskAssigneeId], name: "Assignee",references: [id])
+  turnedInAt     String
+  taskAssignee   User    @relation(fields: [taskAssigneeId], name: "Assignee", references: [id])
   taskAssigneeId String  @db.ObjectId
-  project        Project @relation(fields: [projectId], name: "ProjectTasks",references: [id])
+  taskCreator    User    @relation(fields: [taskCreatorId], name: "Creator", references: [id])
+  taskCreatorId  String  @db.ObjectId
+  project        Project @relation(fields: [projectId], name: "ProjectTasks", references: [id])
   projectId      String  @db.ObjectId
 
   @@map("tasks")

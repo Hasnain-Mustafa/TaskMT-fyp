@@ -10,7 +10,10 @@ export const mutations = `
       dueDate: String,
       startDate: String,
       taskAssigneeEmail: String,
-      projectId: ID): Tasks
+      projectId: ID,
+      taskCreatorId: ID
+      turnedInAt: String
+      ): Tasks
   
       updateTask(
         taskId: ID!
@@ -22,6 +25,7 @@ export const mutations = `
         dueDate: String
         startDate: String
         taskAssigneeId: String
+        turnedInAt: String
       
       ): Tasks
       

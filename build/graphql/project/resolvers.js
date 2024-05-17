@@ -44,12 +44,12 @@ const mutations = {
         }
         catch (error) {
             // Handle any errors that occur during project creation
-            console.error('Error creating project:', error);
-            throw new Error('Failed to create project');
+            throw new Error(`${error}`);
         }
     }),
     updateProject: userService_2.updateProject,
     deleteProject: userService_2.deleteProject,
+    deleteProjects: userService_2.deleteProjects,
     deleteProjectMember: userService_2.deleteProjectMember
 };
 exports.resolvers = { queries, mutations };

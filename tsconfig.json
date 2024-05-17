@@ -13,6 +13,6 @@
     "strict": true
     // "allowImportingTsExtensions": true  // Only allowed when either 'noEmit' or 'emitDeclarationOnly' is set
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts"],
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/services/cronJob.ts"],
   "exclude": ["node_modules"]
 }

@@ -8,17 +8,17 @@ exports.mutations = `
       title: String,
       status: String,
       summary: String,
-      weeks: String,
-      budget: String,
+      weeks: Int,
+      budget: Int,
       assigneeEmails: [String]
-      creatorId: ID): Projects
+      creatorId: ID): Projectss
       updateProject(
         projectId: ID!
         title: String
         status: String
         summary: String
-        weeks: String,
-        budget: String,
+        weeks: Int,
+        budget: Int,
         assigneeEmails: [String]
       
       ): String
@@ -26,6 +26,11 @@ exports.mutations = `
       deleteProject(
         projectId: ID!
       ): DeletedProject
+      
+      deleteProjects(
+        projectIds: [ID!]!
+        ): DeletedProjects!
+
       deleteProjectMember(
         projectId: ID!
         memberEmail: String!

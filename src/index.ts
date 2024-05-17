@@ -4,12 +4,12 @@ import { expressMiddleware } from '@apollo/server/express4';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import { decodeJWTToken } from './services/userService';
-
+import { startCronJobs } from './services/cronJob';
 const PORT = Number(process.env.PORT) || 3000;
 
 async function startServer() {
   const app = express();
-
+ 
   app.use(bodyParser.json());
   app.use(cors());
 
@@ -31,6 +31,7 @@ async function startServer() {
       },
     })
   );
+  startCronJobs();
   app.listen(PORT, () => console.log(`Server running on port ${PORT} `));
 }
 startServer();
