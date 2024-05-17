@@ -15,7 +15,9 @@ This project boasts a comprehensive set of features to streamline your workflow 
 
 ## Technologies Used
 
-*  **Frontend:** React, Tailwind CSS, Framer Motion  *  **Backend:**  Node.js, Express, MERN Stack (MongoDB, Express, React, Node.js)  *  **State Management:** Redux-Toolkit
+*  **Frontend:** React, Tailwind CSS, Framer Motion
+*  **Backend:**  Node.js, Express, MERN Stack (MongoDB, Express, React, Node.js)
+*  **State Management:** Redux-Toolkit
 *  **Authentication:** Secure Email/Password Auth, GitHub OAuth, Google OAuth
 *  **GraphQL:** Efficient data fetching with Apollo Server
 *  **Real-time Features:** Livekit (Video Conferencing) & ChatEngine (In-App Chat)
