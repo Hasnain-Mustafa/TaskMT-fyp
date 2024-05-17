@@ -9,24 +9,47 @@ import { useSelector } from "react-redux";
 import { useStateContext } from "../contexts/ContextProvider";
 import { motion } from "framer-motion";
 import { framerButtonVariants } from "./framer";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined"; // Import the edit icon
 
-const ProjectCard = ({ project, onViewDetails, onDelete }) => {
+const ProjectCard = ({ project, onViewDetails, onDelete, onEdit }) => {
   const { currentColor } = useStateContext();
   const { userInfo } = useSelector((state) => state.auth);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
       <Card className="w-64 relative" style={{ borderRadius: "1rem" }}>
-        <IconButton
-          style={{ position: "absolute", top: 0, right: 0, zIndex: 1 }}
-          component={motion.div}
-          {...framerButtonVariants}
-          onClick={onDelete}
-          aria-label="Delete"
-          color="error"
-        >
-          <DeleteOutlineOutlinedIcon />
-        </IconButton>
+        {userInfo.isManager === "true" && (
+          <>
+            <IconButton
+              style={{ position: "absolute", top: 0, right: 0, zIndex: 1 }}
+              component={motion.div}
+              {...framerButtonVariants}
+              onClick={onDelete}
+              aria-label="Delete"
+              color="error"
+            >
+              <DeleteOutlineOutlinedIcon />
+            </IconButton>
+            <IconButton
+              style={{
+                position: "absolute",
+                top: 0,
+                right: 40,
+                zIndex: 1,
+                color: currentColor,
+                fontSize: "small",
+              }}
+              component={motion.div}
+              {...framerButtonVariants}
+              // onClick={onEdit} // Added onClick event for editing
+              aria-label="Edit"
+              onClick={onEdit}
+              color="inherit" // Set color to inherit for black
+            >
+              <EditOutlinedIcon fontSize="small" />
+            </IconButton>
+          </>
+        )}
         <CardContent>
           <h3 className="text-lg font-semibold mb-4">{project.title}</h3>
           <p className="text-sm text-gray-500 mb-4">{project.summary}</p>

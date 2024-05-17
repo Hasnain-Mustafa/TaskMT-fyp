@@ -40,6 +40,7 @@ export const projectsApi = createApi({
         variables: { creatorId },
       }),
     }),
+
     getAllProjectsAssigned: builder.query({
       query: ({ assigneeId }) => ({
         document: gql`

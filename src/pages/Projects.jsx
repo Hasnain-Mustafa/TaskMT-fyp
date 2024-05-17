@@ -1,39 +1,43 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Button, Modal, Box, TextField } from "@mui/material";
 
 import {
-  createProject,
-  deleteProject,
-} from "../features/projects/projectActions";
-import { getCurrentFormattedTime } from "../utils/utils";
-import avatar from "../data/avatar.jpg";
-import { pushNotifications } from "../features/auth/authActions";
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button,
+} from "@mui/material";
+
 import { useNavigate } from "react-router-dom";
-import { setCredentials, setProjects } from "../features/projects/projectSlice";
-import { useStateContext } from "../contexts/ContextProvider";
+import { setProjects } from "../features/projects/projectSlice";
+import { deleteProject } from "../features/projects/projectActions";
 import {
   useGetAllProjectsQuery,
   useGetAllProjectsAssignedQuery,
 } from "../app/services/projects/projectsService";
 import ProjectCard from "../components/ProjectCard";
-import { Header } from "../components";
-import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "react-toastify";
-import CardComponent from "../components/CardComponent";
-import MonthlyGoalsCard from "../components/MonthlyGoalsCard";
 import CreateProjectsModal from "../components/CreateProjectsModal";
+import { motion, AnimatePresence } from "framer-motion";
 import { framerButtonVariants } from "../components/framer";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { gql } from "@apollo/client";
+import client from "../ApolloClient";
+import { useStateContext } from "../contexts/ContextProvider";
+import CardComponent from "../components/CardComponent";
+import { Header } from "../components";
+import MonthlyGoalsCard from "../components/MonthlyGoalsCard";
 const Projects = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const { projects } = useSelector((state) => state.projects);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(false);
+  const [modalData, setModalData] = useState(null);
   const { currentColor } = useStateContext();
-
-  // Conditionally using different queries based on the user's role
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState(null);
+  // Queries
   const { data, isFetching } =
     userInfo.isManager == "true"
       ? useGetAllProjectsQuery(
@@ -53,6 +57,7 @@ const Projects = () => {
           }
         );
 
+  // Effect to handle project data loading
   useEffect(() => {
     if (data) {
       const actionPayload =
@@ -65,8 +70,7 @@ const Projects = () => {
     }
   }, [data, dispatch, userInfo.isManager]);
 
-  const onViewDetails = async (projectId) => {
-    console.log(projectId);
+  const onViewDetails = (projectId) => {
     navigate(`/kanban/${projectId}`);
   };
 
@@ -76,61 +80,65 @@ const Projects = () => {
 
   const handleCloseModal = () => {
     setOpenModal(false);
+    setModalData(null);
   };
 
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-  //   const updatedValue =
-  //     name === "assigneeEmails"
-  //       ? value.split(",").map((email) => email.trim())
-  //       : value;
-  //   setNewProjectData({ ...newProjectData, [name]: updatedValue });
+  // const handleDeleteProject = (projectId) => {
+  //   dispatch(deleteProject({ projectId }));
   // };
-
-  // const handleAddProject = () => {
-  //   const projectData = dispatch(createProject(newProjectData));
-  //   projectData.then((result) => {
-  //     console.log(result);
-  //     if (result && result.meta.requestStatus) {
-  //       console.log(result.meta.requestStatus);
-  //       if (result.meta.requestStatus === "rejected") {
-  //         toast.error(result.payload);
-  //       } else if (result.meta.requestStatus === "fulfilled") {
-  //         toast.success("Project Created");
-  //         result.payload.assigneeIds.forEach((assignee) => {
-  //           dispatch(
-  //             pushNotifications({
-  //               userId: assignee,
-  //               notification: [
-  //                 {
-  //                   image: "",
-  //                   message: `You have been assigned to project ${result.payload.title}`,
-  //                   desc: "Check the project details and start working on your tasks.",
-  //                   time: getCurrentFormattedTime(),
-  //                 },
-  //               ],
-  //             })
-  //           );
-  //         }); // Correct placement of the closing parenthesis and semicolon for forEach
-
-  //         handleCloseModal();
-  //         setNewProjectData({
-  //           title: "",
-  //           status: "",
-  //           summary: "",
-  //           weeks: "",
-  //           budget: "",
-  //           assigneeEmails: [],
-  //           creatorId: userInfo.id,
-  //         });
-  //       }
-  //     }
-  //   });
-  // };
-  const handleDeleteProject = (projectId) => {
-    dispatch(deleteProject({ projectId }));
+  const handleDeleteProject = () => {
+    dispatch(deleteProject({ projectId: projectToDelete }));
+    closeConfirmDialog();
   };
 
+  const openConfirmDialog = (projectId) => {
+    setProjectToDelete(projectId);
+    setConfirmOpen(true);
+  };
+
+  const closeConfirmDialog = () => {
+    setConfirmOpen(false);
+    setProjectToDelete(null);
+  };
+
+  const handleEditProject = async (projectId) => {
+    const projectData = await fetchProject(projectId);
+
+    setOpenModal(true);
+
+    setModalData({
+      ...projectData,
+      projectId: projectData.id,
+      assigneeEmails: projectData.assigneeDetails.map((a) => a.email),
+    });
+  };
+  const fetchProject = async (projectId) => {
+    console.log(projectId);
+    const { data, error } = await client.query({
+      query: gql`
+        query GetProjectById($projectId: String!) {
+          getProjectById(projectId: $projectId) {
+            title
+            id
+            status
+            summary
+            weeks
+            budget
+            assigneeDetails {
+              email
+            }
+            creatorId
+          }
+        }
+      `,
+      variables: { projectId },
+    });
+    if (error) {
+      console.error("Error fetching project details:", error);
+      return null;
+    }
+    return data.getProjectById;
+  };
   return (
     <div className="p-6">
       {userInfo.isManager === "true" ? (
@@ -152,7 +160,7 @@ const Projects = () => {
           </Button>
         </div>
       ) : (
-        <Header title="Assigned Projects" />
+        <div className="mb-4">Assigned Projects</div>
       )}
       <div className="flex flex-wrap justify-center space-y-4 md:space-y-0 md:space-x-4 p-5">
         <div className="mb-8">
@@ -162,13 +170,14 @@ const Projects = () => {
           <MonthlyGoalsCard />
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 mt-20">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {projects.map((project) => (
           <ProjectCard
             key={project.id}
             project={project}
             onViewDetails={onViewDetails}
-            onDelete={() => handleDeleteProject(project.id)}
+            onDelete={() => openConfirmDialog(project.id)}
+            onEdit={() => handleEditProject(project.id)}
           />
         ))}
       </div>
@@ -176,81 +185,52 @@ const Projects = () => {
         {openModal && (
           <CreateProjectsModal
             handleCloseModal={handleCloseModal}
-            // handleAddProject={handleAddProject}
-            // newProjectData={newProjectData}
-            // setNewProjectData={setNewProjectData}
-            // email={email} // Passing email to the modal
-            // setEmail={setEmail} // Passing setEmail to the modal
+            initialData={modalData}
           />
         )}
       </AnimatePresence>
-      {/* <Modal open={openModal} onClose={handleCloseModal}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 400,
-            bgcolor: "background.paper",
-            border: "2px solid #000",
-            boxShadow: 24,
-            p: 4,
-          }}
-        >
-          <TextField
-            fullWidth
-            label="Project Title"
-            name="title"
-            value={newProjectData.title}
-            onChange={handleInputChange}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Project Status"
-            name="status"
-            value={newProjectData.status}
-            onChange={handleInputChange}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Project Summary"
-            name="summary"
-            value={newProjectData.summary}
-            onChange={handleInputChange}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Project Weeks"
-            name="weeks"
-            value={newProjectData.weeks}
-            onChange={handleInputChange}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Project Budget"
-            name="budget"
-            value={newProjectData.budget}
-            onChange={handleInputChange}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Assignee Emails"
-            name="assigneeEmails"
-            value={newProjectData.assigneeEmails}
-            onChange={handleInputChange}
-            margin="normal"
-          />
-          <Button variant="contained" onClick={handleAddProject}>
-            Add Project
+      <Dialog
+        open={confirmOpen}
+        onClose={closeConfirmDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        sx={{
+          "& .MuiDialog-paper": {
+            width: "auto", // Automatically adjust width to content
+            maxWidth: "360px", // Maintain a manageable maximum width
+            backgroundColor: currentColor, // Use dynamic color from context
+            color: "#fff", // White text for general content
+            borderRadius: "8px", // Rounded corners
+          },
+        }}
+      >
+        <DialogTitle id="alert-dialog-title" sx={{ color: "#fff" }}>
+          {"Confirm Deletion"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText
+            id="alert-dialog-description"
+            sx={{ color: "#fff" }}
+          >
+            Are you sure you want to delete this project? This action cannot be
+            undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeConfirmDialog} sx={{ color: "#fff" }}>
+            Cancel
           </Button>
-        </Box>
-      </Modal> */}
+
+          <Button
+            onClick={handleDeleteProject}
+            autoFocus
+            className="bg-red-500 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+            style={{ color: "#ef4444" }} // Force the text color inline
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

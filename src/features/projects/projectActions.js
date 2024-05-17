@@ -37,21 +37,26 @@ const UPDATE_PROJECT_MUTATION = gql`
   mutation UpdateProject(
     $projectId: ID!
     $title: String
-    $status: String
     $summary: String
-    $weeks: String
-    $budget: String
-    $assigneeEmails: [String]
+    $weeks: Int
+    $budget: Int
   ) {
     updateProject(
       projectId: $projectId
       title: $title
-      status: $status
       summary: $summary
       weeks: $weeks
       budget: $budget
-      assigneeEmails: $assigneeEmails
-    )
+    ) {
+      status
+      summary
+      weeks
+      id
+      assigneeIds
+      title
+      budget
+      creatorId
+    }
   }
 `;
 
@@ -104,26 +109,24 @@ export const createProject = createAsyncThunk(
 
 export const updateProject = createAsyncThunk(
   "projects/updateProject",
-  async (
-    { projectId, title, status, summary, weeks, budget, assigneeEmails },
-    { rejectWithValue }
-  ) => {
+  async ({ projectId, title, summary, weeks, budget }, { rejectWithValue }) => {
     try {
+      console.log(projectId, title, summary, weeks, budget);
       const request = await client.mutate({
         mutation: UPDATE_PROJECT_MUTATION,
         variables: {
           projectId,
           title,
-          status,
+
           summary,
           weeks,
           budget,
-          assigneeEmails,
         },
       });
 
-      const data = request;
-      console.log(data, "test result");
+      const { data } = request;
+
+      return data.updateProject;
     } catch (error) {
       // Handle error
       console.error("Project Updation Failed:", error);

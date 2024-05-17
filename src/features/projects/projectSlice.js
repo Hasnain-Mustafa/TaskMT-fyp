@@ -71,8 +71,11 @@ const projectSlice = createSlice({
       .addCase(updateProject.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
-        // Assuming you have a way to update the project in the projects array
-        // You need to update the project in the state based on the action.payload
+        const newProjects = state.projects.map((project) => {
+          return project?.id === action.payload?.id ? action.payload : project;
+        });
+
+        state.projects = newProjects;
       })
       .addCase(updateProject.rejected, (state, action) => {
         state.loading = false;

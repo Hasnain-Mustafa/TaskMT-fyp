@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Backdrop from "./Backdrop";
 import { MdCancel, MdAdd } from "react-icons/md";
 import { motion } from "framer-motion";
@@ -10,7 +10,10 @@ import { toast } from "react-toastify";
 import { framerButtonVariants, framerdropIn } from "../components/framer";
 import { getCurrentFormattedTime } from "../utils/utils";
 import { pushNotifications } from "../features/auth/authActions";
-import { createProject } from "../features/projects/projectActions";
+import {
+  createProject,
+  updateProject,
+} from "../features/projects/projectActions";
 const projectSchema = z.object({
   title: z.string().min(1, "Project title is required."),
   summary: z.string().min(1, "Project summary is required."),
@@ -26,10 +29,12 @@ const projectSchema = z.object({
 
 const CreateProjectsModal = ({
   handleCloseModal,
+  initialData,
   // setNewProjectData,
   // newProjectData,
 }) => {
   const [email, setEmail] = useState("");
+  const [pid, setPid] = useState("");
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth);
   const {
@@ -53,35 +58,52 @@ const CreateProjectsModal = ({
       creatorId: userInfo.id,
     },
   });
-
+  // Set form default values when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      Object.keys(initialData).forEach((key) => {
+        setValue(key, initialData[key]);
+      });
+      if (initialData.projectId) {
+        setPid(initialData.projectId);
+      }
+    }
+  }, [initialData, setValue]);
   const handleAddProject = async (data) => {
     console.log(data);
-
+    const action = initialData ? updateProject : createProject;
     try {
-      const result = dispatch(createProject(data));
+      const result = initialData
+        ? dispatch(action({ ...data, projectId: pid }))
+        : dispatch(action(data));
       result.then((res) => {
         if (res && res.meta.requestStatus) {
           if (res.meta.requestStatus === "rejected") {
             toast.error(res.payload);
           } else if (res.meta.requestStatus === "fulfilled") {
-            toast.success("Project Created");
+            toast.success(
+              `${initialData ? "Updated" : "Created"} Project Successfully`
+            );
             reset();
             handleCloseModal();
-            res.payload.assigneeIds.forEach((assignee) => {
-              dispatch(
-                pushNotifications({
-                  userId: assignee,
-                  notification: [
-                    {
-                      image: "",
-                      message: `You have been assigned to project ${res.payload.title}`,
-                      desc: "Check the project details and start working on your tasks.",
-                      time: getCurrentFormattedTime(),
-                    },
-                  ],
-                })
-              );
-            });
+            {
+              !initialData &&
+                res.payload.assigneeIds.forEach((assignee) => {
+                  dispatch(
+                    pushNotifications({
+                      userId: assignee,
+                      notification: [
+                        {
+                          image: "",
+                          message: `You have been assigned to project ${res.payload.title}`,
+                          desc: "Check the project details and start working on your tasks.",
+                          time: getCurrentFormattedTime(),
+                        },
+                      ],
+                    })
+                  );
+                });
+            }
           }
         }
       });
@@ -139,7 +161,7 @@ const CreateProjectsModal = ({
         </motion.button>
         <div className="flex flex-col space-y-1 px-6 py-3 ">
           <h3 className="font-semibold tracking-tight text-2xl text-center">
-            Add Project
+            {initialData ? "Edit Project" : "Add Project"}
           </h3>
         </div>
         <div className="p-6 space-y-4">
@@ -200,48 +222,51 @@ const CreateProjectsModal = ({
               <p className="text-red-500">{errors.budget.message}</p>
             )}
           </div>
-          <div className="space-y-1">
-            <label className="text-sm font-medium leading-none">
-              Assignee Emails
-            </label>
-            <div className="relative">
-              <input
-                name="assigneeEmails"
-                value={email}
-                onChange={handleEmailChange}
-                className="flex h-10 w-full rounded-md border border-input bg-background outline outline-2 outline-gray-500 px-3 py-2 text-sm"
-                placeholder="Add Assignee Email"
-              />
-              <button
-                type="button"
-                onClick={addEmailToList}
-                className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
-              >
-                <MdAdd />
-              </button>
-            </div>
-            {errors.assigneeEmails && (
-              <p className="text-red-500">{errors.assigneeEmails.message}</p>
-            )}
-            <ul className="mt-2">
-              {watch("assigneeEmails").map((email, index) => (
-                <li
-                  key={index}
-                  className="flex justify-between items-center p-1"
+          {!initialData && (
+            <div className="space-y-1">
+              <label className="text-sm font-medium leading-none">
+                Assignee Emails
+              </label>
+              <div className="relative">
+                <input
+                  name="assigneeEmails"
+                  value={email}
+                  onChange={handleEmailChange}
+                  className="flex h-10 w-full rounded-md border border-input bg-background outline outline-2 outline-gray-500 px-3 py-2 text-sm"
+                  placeholder="Add Assignee Email"
+                />
+                <button
+                  type="button"
+                  onClick={addEmailToList}
+                  className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
                 >
-                  {email}
-                  <button
-                    type="button"
-                    onClick={() => removeEmailFromList(index)}
-                    className="text-red-500 hover:text-red-700 ml-2"
+                  <MdAdd />
+                </button>
+              </div>
+              {errors.assigneeEmails && (
+                <p className="text-red-500">{errors.assigneeEmails.message}</p>
+              )}
+              <ul className="mt-2">
+                {watch("assigneeEmails").map((email, index) => (
+                  <li
+                    key={index}
+                    className="flex justify-between items-center p-1"
                   >
-                    Remove
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
+                    {email}
+                    <button
+                      type="button"
+                      onClick={() => removeEmailFromList(index)}
+                      className="text-red-500 hover:text-red-700 ml-2"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
+
         <div className="items-center p-6 flex flex-col space-y-4">
           <div className="flex flex-col space-y-1">
             <motion.button
@@ -251,7 +276,7 @@ const CreateProjectsModal = ({
               className="rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-black text-white hover:bg-Hover h-10 px-4 py-2 w-full"
               type="submit"
             >
-              Add Project
+              {initialData ? "Edit Project" : "Add Project"}
             </motion.button>
           </div>
         </div>
