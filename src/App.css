@@ -1,19 +1,20 @@
-@import url('https://cdn.syncfusion.com/ej2/material.css');
+@import url("https://cdn.syncfusion.com/ej2/material.css");
 
 .sidebar {
-  box-shadow: rgb(113 122 131 / 11%) 0px 7px 30px 0px;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 7px 30px 0px;
 }
-/* .nav-item,
+.nav-item,
 .navbar {
-  z-index: 10000;
-} */
-@media  screen and (max-width:800px) {
-  .sidebar{
+  z-index: 8888;
+}
+@media screen and (max-width: 800px) {
+  .sidebar {
     z-index: 10000000;
   }
 }
 
-.e-dlg-center-center, .e-quick-popup-wrapper.e-device{
+.e-dlg-center-center,
+.e-quick-popup-wrapper.e-device {
   z-index: 1000000 !important;
 }
 
@@ -30,9 +31,9 @@
 
 /* color-picker style  */
 
- #preview {
+#preview {
   background: transparent
-    url('https://ej2.syncfusion.com/react/demos/src/color-picker/images/pen.png')
+    url("https://ej2.syncfusion.com/react/demos/src/color-picker/images/pen.png")
     no-repeat;
   display: inline-block;
   height: 80px;
@@ -42,10 +43,17 @@
   background-color: #008000;
 }
 
-.e-input-group:not(.e-float-icon-left), .e-input-group.e-success:not(.e-float-icon-left), .e-input-group.e-warning:not(.e-float-icon-left), .e-input-group.e-error:not(.e-float-icon-left), .e-input-group.e-control-wrapper:not(.e-float-icon-left), .e-input-group.e-control-wrapper.e-success:not(.e-float-icon-left), .e-input-group.e-control-wrapper.e-warning:not(.e-float-icon-left), .e-input-group.e-control-wrapper.e-error:not(.e-float-icon-left){
+.e-input-group:not(.e-float-icon-left),
+.e-input-group.e-success:not(.e-float-icon-left),
+.e-input-group.e-warning:not(.e-float-icon-left),
+.e-input-group.e-error:not(.e-float-icon-left),
+.e-input-group.e-control-wrapper:not(.e-float-icon-left),
+.e-input-group.e-control-wrapper.e-success:not(.e-float-icon-left),
+.e-input-group.e-control-wrapper.e-warning:not(.e-float-icon-left),
+.e-input-group.e-control-wrapper.e-error:not(.e-float-icon-left) {
   border: none;
 }
-.ce-ice-breaker-gif{
+img#ce-ice-breaker-gif {
   display: inline-block;
   align-items: center !important;
 }
@@ -54,7 +62,7 @@
 .custom-attachment-input .icon-wrapper::before {
   content: "";
   display: inline-block;
-  background-image: url('./data/video-call-icon.svg');
+  background-image: url("./data/video-call-icon.svg");
   background-size: contain;
   background-repeat: no-repeat;
   width: 20px;
@@ -63,17 +71,92 @@
   margin-right: 10px;
   cursor: pointer;
 }
+.ce-chat-engine {
+  font-family: inherit !important;
+}
+
+@media (max-width: 481px) {
+  /* Styles for devices with a width less than or equal to 374px (mobile devices) */
+  .ce-chat-engine {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative;
+    height: 100%;
+    margin: 5rem 0 0 0;
+    box-sizing: border-box;
+    font-family: sans-serif !important;
+  }
+  .ce-chat-header {
+    overflow: hidden;
+  }
+
+  .ce-ice-breaker-gif {
+    height: 6.25rem;
+    width: 5.25rem !important;
+  }
+  .ce-mobile-chat-settings-button {
+    background-color: #333 !important;
+    color: white !important;
+    right: 30px !important;
+    margin-top: -0.7rem;
+  }
+
+  .ce-default-button.undefined {
+    background-color: #333 !important;
+    color: white !important;
+  }
+
+  .ce-mobile-chat-list-button {
+    background-color: #333 !important;
+    color: white !important;
+    padding-top: 0.5rem !important;
+    left: 30px !important;
+    margin-top: -0.7rem;
+  }
+}
+/* .ce-default-button, */
+.ce-chat-form-button {
+  /* padding: 0 2rem 0 2rem !important; */
+  background-color: #333 !important;
+  color: white !important;
+}
+
+.ce-message-form-input {
+  border: 1px solid black !important;
+  border-radius: 50px !important;
+  height: 2.125rem !important;
+  margin-left: 1rem !important;
+}
 
 .custom-attachment-input .icon-wrapper {
   display: inline-block;
 }
 
-/* Add this to your CSS file
-@keyframes completionAnimation {
-  from { opacity: 1; }
-  to { opacity: 0; }
+.ce-my-message-body,
+ce-my-message-sending-body {
+  background-color: #333 !important;
 }
 
-.complete-animation {
-  animation: completionAnimation 2s ease forwards; /* Adjust duration as needed */
-/* } */ 
+#ce-send-message-button {
+  background-color: #333 !important;
+  padding: 0 1rem 0 1rem !important;
+}
+
+/* .ce-chat-list {
+  background-color: # !important;
+} */
+/* .ce-message-form-input {
+  background-color: #555 !important;
+  color: white;
+} */
+div.ce-wrapper {
+  width: 100vw !important;
+  height: 85vh !important;
+}
+/* Add this to your CSS file or inside a <style> tag in your React component */
+/* Add this to your CSS file or inside a <style> tag in your React component */
+/* Add this to your CSS file or within a <style> tag in your React component */
+/* Add this to your CSS file or within a <style> tag in your React component */

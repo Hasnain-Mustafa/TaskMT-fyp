@@ -1,96 +1,201 @@
-import React from 'react';
-import { ChartComponent, SeriesCollectionDirective, SeriesDirective, Inject, DateTime, SplineAreaSeries, Legend, Tooltip } from '@syncfusion/ej2-react-charts';
-
-import { ChartsHeader } from '../../components';
-// import { areaCustomSeries, areaPrimaryXAxis, areaPrimaryYAxis } from '../../data/dummy';
-import { useStateContext } from '../../contexts/ContextProvider';
-// Sample data for three members' daily task completion
-const memberTaskData = [
-  { memberName: 'John', dailyTasks: [{ date: '2024-04-10', tasks: 2}, { date: '2024-04-11', tasks: 3 }, { date: '2024-04-12', tasks: 6 },  { date: '2024-04-13', tasks: 6 }] },
-  { memberName: 'Jane', dailyTasks: [{ date: '2024-04-10', tasks: 3 }, { date: '2024-04-11', tasks: 7 }, { date: '2024-04-12', tasks: 2 }] },
-  { memberName: 'Doe', dailyTasks: [{ date: '2024-04-10', tasks: 1 }, { date: '2024-04-11', tasks: 5 }, { date: '2024-04-12', tasks: 2}] },
-];
-
-// Assuming your transformDataToSeries function is already defined, modify it like so:
-const transformDataToSeries = (data) => {
-  const colors = ['black', 'gray', 'white']; // Define your color array
-  return data.map((member, index) => ({
-    dataSource: member.dailyTasks.map((task) => ({
-      x: new Date(task.date),
-      y: task.tasks,
-    })),
-    xName: 'x',
-    yName: 'y',
-    name: member.memberName,
-    opacity: '0.8',
-    type: 'SplineArea',
-    width: '2',
-    fill: colors[index % colors.length], // Assign a color to each series
-  }));
-};
-
-const areaCustomSeries = transformDataToSeries(memberTaskData);
-
-// Define the primary X and Y axes
-export const areaPrimaryXAxis = {
-  valueType: 'DateTime',
-  labelFormat: 'dd/MMM',
-  intervalType: 'Days',
-  edgeLabelPlacement: 'Shift',
-  labelStyle: { color: 'gray' },
-};
-export const areaPrimaryYAxis = {
-  labelFormat: '{value}',
-  title: 'Completed Tasks', // Title for the Y-axis
-  lineStyle: { width: 0 },
-  maximum: Math.max(...memberTaskData.map(member => Math.max(...member.dailyTasks.map(task => task.tasks)))) + 1,
-  interval: 1,
-  majorTickLines: { width: 0 },
-  minorTickLines: { width: 0 },
-  labelStyle: { color: 'gray' },
-};
+import React, { useEffect, useState } from "react";
+import {
+  ChartComponent,
+  SeriesCollectionDirective,
+  SeriesDirective,
+  Inject,
+  SplineAreaSeries,
+  Legend,
+  Tooltip,
+  DateTime,
+} from "@syncfusion/ej2-react-charts";
+import { fetchProjectTasks } from "../../features/projects/projectActions";
+import { ChartsHeader } from "../../components";
+import {
+  useGetAllProjectsQuery,
+  useGetAllProjectsAssignedQuery,
+} from "../../app/services/projects/projectsService";
+import { useSelector, useDispatch } from "react-redux";
+import { setAreaChartData } from "../../features/tasks/taskSlice";
+import moment from "moment";
+import { gql } from "@apollo/client";
+import client from "../../ApolloClient";
 
 const Area = () => {
-  const { currentMode } = useStateContext();
-const tooltipRender = (args) => {
+  const dispatch = useDispatch();
+  const { userInfo } = useSelector((state) => state.auth);
+  const { areaChartData } = useSelector((state) => state.tasks);
+
+  const { data: projectsData, isFetching } =
+    userInfo.isManager == "true"
+      ? useGetAllProjectsQuery({ creatorId: userInfo.id })
+      : useGetAllProjectsAssignedQuery({ assigneeId: userInfo.id });
+  const tooltipRender = (args) => {
     // Ensures that the Y value is included in the tooltip content
     // Check that args.point and args.series are defined and have the correct properties
-    if (args.point && args.series && args.point.y !== undefined && args.series.name) {
-      args.text = `${args.series.name} - Date: ${args.point.x.toLocaleDateString()}, Tasks: ${args.point.y}`;
+    if (
+      args.point &&
+      args.series &&
+      args.point.y !== undefined &&
+      args.series.name
+    ) {
+      args.text = `${
+        args.series.name
+      } - Date: ${args.point.x.toLocaleDateString()}, Tasks: ${args.point.y}`;
     } else {
       // Fallback text in case something is undefined
       args.text = "Data not available";
     }
   };
-  // Custom style to make the chart smaller
-  const chartStyle = {
-    height: '300px', // Adjust height as needed
-    width: '100%', // Adjust width as needed, or set a specific width
-    maxWidth: '500px', // Set a maximum width for the chart container
+  const fetchMemberName = async (memberId) => {
+    const { data, error } = await client.query({
+      query: gql`
+        query GetMemberById($userId: String!) {
+          getMemberById(userId: $userId) {
+            id
+            email
+            name
+            isManager
+            assignedProjectIds
+          }
+        }
+      `,
+      variables: { userId: memberId },
+    });
+    if (error) {
+      console.error("Error fetching member details:", error);
+      return null;
+    }
+    return data.getMemberById;
   };
 
+  useEffect(() => {
+    console.log("Running useEffect with projects data:", projectsData);
+
+    if (projectsData && !isFetching) {
+      console.log("Processing data for chart...");
+      const actionPayload =
+        userInfo.isManager === "true"
+          ? projectsData.getAllProjects
+          : projectsData.getAllProjectsAssigned;
+
+      console.log("Action Payload:", actionPayload);
+
+      const processData = async () => {
+        const lastSevenDays = Array.from({ length: 7 }, (_, i) =>
+          moment().subtract(i, "days").format("YYYY-MM-DD")
+        ).reverse();
+        console.log("Last seven days:", lastSevenDays);
+
+        try {
+          const membersData = await Promise.all(
+            actionPayload?.map(async (project) => {
+              if (
+                project.assigneeDetails &&
+                project.assigneeDetails.length > 0
+              ) {
+                console.log(`Fetching tasks for project ${project.title}`);
+                return await Promise.all(
+                  project.assigneeDetails.map(async (assignee) => {
+                    const tasks = await fetchProjectTasks(
+                      project.id,
+                      assignee.id
+                    );
+                    return tasks.map((task) => ({
+                      ...task,
+                      assigneeId: assignee.id,
+                    }));
+                  })
+                );
+              }
+              return [];
+            })
+          );
+
+          // Flatten tasks and map with member names
+          const allTasks = membersData.flat(2);
+          const tasksByMember = {};
+          await Promise.all(
+            allTasks?.map(async (task) => {
+              if (task.turnedInAt) {
+                const taskDate = moment(task.turnedInAt).format("YYYY-MM-DD");
+                if (lastSevenDays.includes(taskDate)) {
+                  const member = await fetchMemberName(task.assigneeId);
+                  const memberName = member ? member.name : "Unknown";
+                  if (!tasksByMember[memberName]) {
+                    tasksByMember[memberName] = {};
+                  }
+                  tasksByMember[memberName][taskDate] =
+                    (tasksByMember[memberName][taskDate] || 0) + 1;
+                }
+              }
+            })
+          );
+
+          const chartData = Object.keys(tasksByMember).map((memberName) => ({
+            name: memberName,
+            dataSource: lastSevenDays.map((day) => ({
+              x: day,
+              y: tasksByMember[memberName][day] || 0,
+            })),
+            xName: "x",
+            yName: "y",
+            type: "SplineArea",
+            opacity: "0.8",
+            width: "2",
+          }));
+
+          console.log("Prepared chart data:", chartData);
+          dispatch(setAreaChartData(chartData));
+        } catch (error) {
+          console.error("Error processing project tasks:", error);
+        }
+      };
+
+      processData();
+    }
+  }, [projectsData, isFetching]);
+
   return (
-    <div className="m-2 md:m-5 mt-12 p-5 bg-white dark:bg-secondary-dark-bg rounded-2xl" style={chartStyle}>
-     <div className="flex justify-between items-center mb-5">
-        <h2 className="text-lg font-semibold">Tracking progress</h2>
-      </div>
-      
-      <div style={chartStyle}>
+    <div className="m-4 md:m-10 mt-24 p-10 bg-white dark:bg-secondary-dark-bg rounded-3xl">
+      <ChartsHeader
+        category="Area"
+        title="Task Turn-In By Assignee Over Last 7 Days"
+      />
+      <div className="w-full">
         <ChartComponent
-          id="charts"
-          primaryXAxis={areaPrimaryXAxis}
-          primaryYAxis={areaPrimaryYAxis}
+          id="area-chart"
+          primaryXAxis={{
+            valueType: "DateTime",
+            labelFormat: "dd/MMM",
+            intervalType: "Days",
+            edgeLabelPlacement: "Shift",
+            labelStyle: { color: "gray" },
+          }}
+          primaryYAxis={{
+            labelFormat: "{value}",
+            title: "Completed Tasks",
+            lineStyle: { width: 0 },
+            maximum:
+              Math.max(
+                ...areaChartData.map((series) =>
+                  Math.max(...series.dataSource.map((data) => data.y))
+                )
+              ) + 1,
+            interval: 1,
+            majorTickLines: { width: 0 },
+            minorTickLines: { width: 0 },
+            labelStyle: { color: "gray" },
+          }}
           chartArea={{ border: { width: 0 } }}
-          background={currentMode === 'Dark' ? '#33373E' : '#fff'}
-          legendSettings={{ background: 'white' }}
-          tooltip={{ enable: true, shared: true}}
+          background="white"
+          tooltip={{ enable: true, shared: true }}
           tooltipRender={tooltipRender}
-          // Apply the custom style here as well
-          style={chartStyle}
+          legendSettings={{ background: "white" }}
         >
           <Inject services={[SplineAreaSeries, DateTime, Legend, Tooltip]} />
           <SeriesCollectionDirective>
-            {areaCustomSeries.map((item, index) => (
+            {areaChartData.map((item, index) => (
               <SeriesDirective key={index} {...item} />
             ))}
           </SeriesCollectionDirective>

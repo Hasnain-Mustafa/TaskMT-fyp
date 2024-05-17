@@ -1,38 +1,73 @@
-import React, { useState , useEffect} from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { Button, Modal, Box, TextField } from '@mui/material';
-import { createProject, deleteProject } from '../features/projects/projectActions'; // Import the createProject action
-import { useNavigate } from 'react-router-dom';
-import { setCredentials  } from '../features/projects/projectSlice'
-import { useStateContext } from '../contexts/ContextProvider';
-import { useGetAllProjectsQuery} from '../app/services/projects/projectsService'
-import ProjectCard from '../components/ProjectCard'
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { Button, Modal, Box, TextField } from "@mui/material";
+
+import {
+  createProject,
+  deleteProject,
+} from "../features/projects/projectActions";
+import { getCurrentFormattedTime } from "../utils/utils";
+import avatar from "../data/avatar.jpg";
+import { pushNotifications } from "../features/auth/authActions";
+import { useNavigate } from "react-router-dom";
+import { setCredentials, setProjects } from "../features/projects/projectSlice";
+import { useStateContext } from "../contexts/ContextProvider";
+import {
+  useGetAllProjectsQuery,
+  useGetAllProjectsAssignedQuery,
+} from "../app/services/projects/projectsService";
+import ProjectCard from "../components/ProjectCard";
+import { Header } from "../components";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-toastify";
+import CardComponent from "../components/CardComponent";
+import MonthlyGoalsCard from "../components/MonthlyGoalsCard";
+import CreateProjectsModal from "../components/CreateProjectsModal";
+import { framerButtonVariants } from "../components/framer";
+import { zodResolver } from "@hookform/resolvers/zod";
 const Projects = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const { projects } = useSelector((state) => state.projects);
-  const { currentColor } = useStateContext();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(false);
-  const [newProjectData, setNewProjectData] = useState({
-    title: '',
-    status: '', 
-    summary: '', 
-    weeks: '', 
-    budget: '', 
-    assigneeEmails: [],
-    creatorId: userInfo.id // Set creatorId directly to userInfo.id
-  });
+  const { currentColor } = useStateContext();
 
-  const { data, isFetching} = useGetAllProjectsQuery({ creatorId: userInfo.id });
+  // Conditionally using different queries based on the user's role
+  const { data, isFetching } =
+    userInfo.isManager == "true"
+      ? useGetAllProjectsQuery(
+          { creatorId: userInfo.id },
+          {
+            refetchOnMountOrArgChange: true,
+            skip: false,
+            selectFromResult: (data) => data,
+          }
+        )
+      : useGetAllProjectsAssignedQuery(
+          { assigneeId: userInfo.id },
+          {
+            refetchOnMountOrArgChange: true,
+            skip: false,
+            selectFromResult: (data) => data,
+          }
+        );
 
   useEffect(() => {
-    console.log(data)
-    if (data) dispatch(setCredentials(data?.getAllProjects))
-    deleteProject();
-  }, [data, dispatch])
-  const onViewDetails = () => {
-    navigate('/menu-tab');
+    if (data) {
+      const actionPayload =
+        userInfo.isManager == "true"
+          ? data?.getAllProjects
+          : data?.getAllProjectsAssigned;
+      setTimeout(() => {
+        dispatch(setProjects(actionPayload));
+      }, 250);
+    }
+  }, [data, dispatch, userInfo.isManager]);
+
+  const onViewDetails = async (projectId) => {
+    console.log(projectId);
+    navigate(`/kanban/${projectId}`);
   };
 
   const handleOpenModal = () => {
@@ -43,65 +78,122 @@ const Projects = () => {
     setOpenModal(false);
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-  
-    // If the field is assigneeEmails, split the input by commas to create an array
-    const updatedValue = name === 'assigneeEmails' ? value.split(',').map(email => email.trim()) : value;
-  
-    setNewProjectData({ ...newProjectData, [name]: updatedValue });
-  };
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+  //   const updatedValue =
+  //     name === "assigneeEmails"
+  //       ? value.split(",").map((email) => email.trim())
+  //       : value;
+  //   setNewProjectData({ ...newProjectData, [name]: updatedValue });
+  // };
 
-  const handleAddProject = () => {
-    console.log(newProjectData)
-    dispatch(createProject(newProjectData));
-   
-    handleCloseModal();
-    setNewProjectData({
-      title: '',
-      status: '', 
-      summary: '', 
-      weeks: '', 
-      budget: '', 
-      assigneeEmails: [],
-      creatorId: userInfo.id // Set creatorId directly to userInfo.id
-    });
-  };
+  // const handleAddProject = () => {
+  //   const projectData = dispatch(createProject(newProjectData));
+  //   projectData.then((result) => {
+  //     console.log(result);
+  //     if (result && result.meta.requestStatus) {
+  //       console.log(result.meta.requestStatus);
+  //       if (result.meta.requestStatus === "rejected") {
+  //         toast.error(result.payload);
+  //       } else if (result.meta.requestStatus === "fulfilled") {
+  //         toast.success("Project Created");
+  //         result.payload.assigneeIds.forEach((assignee) => {
+  //           dispatch(
+  //             pushNotifications({
+  //               userId: assignee,
+  //               notification: [
+  //                 {
+  //                   image: "",
+  //                   message: `You have been assigned to project ${result.payload.title}`,
+  //                   desc: "Check the project details and start working on your tasks.",
+  //                   time: getCurrentFormattedTime(),
+  //                 },
+  //               ],
+  //             })
+  //           );
+  //         }); // Correct placement of the closing parenthesis and semicolon for forEach
 
+  //         handleCloseModal();
+  //         setNewProjectData({
+  //           title: "",
+  //           status: "",
+  //           summary: "",
+  //           weeks: "",
+  //           budget: "",
+  //           assigneeEmails: [],
+  //           creatorId: userInfo.id,
+  //         });
+  //       }
+  //     }
+  //   });
+  // };
   const handleDeleteProject = (projectId) => {
- dispatch(deleteProject({projectId}))
+    dispatch(deleteProject({ projectId }));
   };
+
   return (
     <div className="p-6">
-      <div className="mb-4">
-        <Button className="text-xs" variant="outlined" onClick={handleOpenModal} style={{ color: currentColor }}>
-          Add Project
-        </Button>
+      {userInfo.isManager === "true" ? (
+        <div className="mb-4">
+          <Button
+            onClick={handleOpenModal}
+            component={motion.div}
+            {...framerButtonVariants}
+            style={{
+              color: "#fff",
+              backgroundColor: currentColor,
+              borderRadius: "9999px",
+              padding: "0.6rem 1rem",
+              fontSize: "0.95rem",
+              textTransform: "none",
+            }}
+          >
+            Add Project
+          </Button>
+        </div>
+      ) : (
+        <Header title="Assigned Projects" />
+      )}
+      <div className="flex flex-wrap justify-center space-y-4 md:space-y-0 md:space-x-4 p-5">
+        <div className="mb-8">
+          <CardComponent />
+        </div>
+        <div className="m-8">
+          <MonthlyGoalsCard />
+        </div>
       </div>
-
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 mt-20">
         {projects.map((project) => (
           <ProjectCard
             key={project.id}
-            name={project.title}
-            description={project.summary}
+            project={project}
+            onViewDetails={onViewDetails}
             onDelete={() => handleDeleteProject(project.id)}
-            onViewDetails={onViewDetails} 
           />
         ))}
       </div>
-
-      <Modal open={openModal} onClose={handleCloseModal}>
+      <AnimatePresence initial={false}>
+        {openModal && (
+          <CreateProjectsModal
+            handleCloseModal={handleCloseModal}
+            // handleAddProject={handleAddProject}
+            // newProjectData={newProjectData}
+            // setNewProjectData={setNewProjectData}
+            // email={email} // Passing email to the modal
+            // setEmail={setEmail} // Passing setEmail to the modal
+          />
+        )}
+      </AnimatePresence>
+      {/* <Modal open={openModal} onClose={handleCloseModal}>
         <Box
           sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
             width: 400,
-            bgcolor: 'background.paper',
-            border: '2px solid #000',
+            bgcolor: "background.paper",
+            border: "2px solid #000",
             boxShadow: 24,
             p: 4,
           }}
@@ -158,7 +250,7 @@ const Projects = () => {
             Add Project
           </Button>
         </Box>
-      </Modal>
+      </Modal> */}
     </div>
   );
 };

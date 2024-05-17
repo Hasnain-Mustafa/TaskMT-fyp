@@ -35,6 +35,7 @@ module.exports = {
         main: "#000000",
         Hover: "#1a1a1a",
         midnight: "#080C20",
+        // red: "#EF4444",
       },
 
       borderWidth: {

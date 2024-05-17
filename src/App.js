@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Landing } from "./pages";
 import AuthenticatedRoutes from "./AuthenticatedRoutes";
 import { ApolloProvider } from "@apollo/client";
@@ -7,6 +7,8 @@ import client from "./ApolloClient";
 import { useStateContext } from "./contexts/ContextProvider";
 import Nav from "./pages/landing/Nav";
 import { useSelector } from "react-redux";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const App = () => {
   const { setCurrentColor, setCurrentMode, currentMode } = useStateContext();
@@ -54,13 +56,19 @@ const App = () => {
       <Nav />
       <div className={currentMode === "Dark" ? "dark" : ""}>
         <Routes>
-          {userInfo ? (
-            <Route path="/*" element={<AuthenticatedRoutes />} />
-          ) : (
-            <Route path="/login" element={<Landing />} />
-          )}
+          <Route
+            path="/*"
+            element={
+              userInfo ? <AuthenticatedRoutes /> : <Navigate to="/login" />
+            }
+          />
+          <Route
+            path="/login"
+            element={userInfo ? <Navigate to="/" /> : <Landing />}
+          />
         </Routes>
       </div>
+      <ToastContainer autoClose={2500} theme="dark" />
     </ApolloProvider>
   );
 };

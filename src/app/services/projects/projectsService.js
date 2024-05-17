@@ -1,33 +1,26 @@
-
-import { graphqlRequestBaseQuery } from '@rtk-query/graphql-request-base-query';
-
-import { createApi} from '@reduxjs/toolkit/query/react'
-
-import { gql } from '@apollo/client';
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { graphqlRequestBaseQuery } from "@rtk-query/graphql-request-base-query";
+import { gql } from "@apollo/client";
 
 export const projectsApi = createApi({
-  reducerPath: 'projectsApi',
+  reducerPath: "projectsApi",
   baseQuery: graphqlRequestBaseQuery({
     url: "http://localhost:3000/graphql",
-    
     prepareHeaders: (headers, { getState }) => {
-    // Retrieve token from redux store
-      const token = getState().auth?.userToken 
-
+      const token = getState().auth?.userToken;
       if (token) {
-        headers.set('authorization', token)
+        headers.set("authorization", `Bearer ${token}`);
       } else {
-        // use refresh token or navigate to login
+        // Optionally handle cases like redirecting to login or refreshing token
       }
-      return headers
+      return headers;
     },
   }),
-  
   endpoints: (builder) => ({
-    GetAllProjects: builder.query({
+    getAllProjects: builder.query({
       query: ({ creatorId }) => ({
-         document: gql`
-         query GetAllProjects($creatorId: String!) {
+        document: gql`
+          query GetAllProjects($creatorId: String!) {
             getAllProjects(creatorId: $creatorId) {
               id
               title
@@ -35,17 +28,43 @@ export const projectsApi = createApi({
               summary
               weeks
               budget
-              assigneeIds
-           
+              assigneeDetails {
+                email
+                name
+                id
+              }
+              creatorId
             }
-          }`, variables: {creatorId}})
-     
-    
+          }
+        `,
+        variables: { creatorId },
       }),
-      transformResponse: (response) => response,
     }),
-  })
+    getAllProjectsAssigned: builder.query({
+      query: ({ assigneeId }) => ({
+        document: gql`
+          query GetAllProjectsAssigned($assigneeId: String!) {
+            getAllProjectsAssigned(assigneeId: $assigneeId) {
+              id
+              title
+              status
+              summary
+              weeks
+              budget
+              assigneeDetails {
+                id
+                email
+                name
+              }
+              creatorId
+            }
+          }
+        `,
+        variables: { assigneeId },
+      }),
+    }),
+  }),
+});
 
-
-
-export const { useGetAllProjectsQuery } = projectsApi;
+export const { useGetAllProjectsQuery, useGetAllProjectsAssignedQuery } =
+  projectsApi;

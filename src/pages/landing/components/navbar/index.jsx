@@ -41,6 +41,7 @@ export const Navbar = ({
       />
       <div className="flex gap-4">
         <motion.button
+          type="button"
           variants={buttonVariants}
           initial="hidden"
           whileInView="visible"
@@ -55,6 +56,7 @@ export const Navbar = ({
           Sign Up
         </motion.button>
         <motion.button
+          type="button"
           variants={buttonVariants}
           initial="hidden"
           whileInView="visible"

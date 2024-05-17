@@ -4,17 +4,22 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { userLogin } from "../../features/auth/authActions";
+import { userLogin, OAuthLogin } from "../../features/auth/authActions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MdCancel } from "react-icons/md";
-import Backdrop from "./Backdrop";
-
+import Backdrop from "../../components/Backdrop";
+import { framerButtonVariants, framerdropIn } from "../../components/framer";
+import {
+  auth,
+  githubProvider,
+  googleProvider,
+} from "../../utils/firebaseConfig";
+import { signInWithPopup } from "firebase/auth";
+import { toast } from "react-toastify";
 const LoginModal = ({ closeLoginFn }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading, userInfo, error, success } = useSelector(
-    (state) => state.auth
-  );
+  const { userInfo } = useSelector((state) => state.auth);
 
   const LoginSchema = z.object({
     username: z.string().min(3).max(20),
@@ -26,36 +31,90 @@ const LoginModal = ({ closeLoginFn }) => {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm({
     resolver: zodResolver(LoginSchema),
   });
 
   useEffect(() => {
     if (userInfo) {
-      navigate("/dashboard");
+      navigate("/");
     }
-  }, [navigate, userInfo]);
+  }, [userInfo, navigate]);
+
+  const OAuthLoginFn = async (email, username) => {
+    const res = dispatch(OAuthLogin({ email }));
+    await handleChatEngineLogic({ username, email });
+    res.then((result) => {
+      if (result && result.meta.requestStatus) {
+        if (result.meta.requestStatus === "rejected") {
+          toast.error(result.payload);
+        } else if (result.meta.requestStatus === "fulfilled") {
+          console.log(result.payload);
+          toast.success(`Happy Tasking, ${result.payload.name}!`);
+          closeLoginFn();
+        }
+      }
+    });
+  };
+
+  const googleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const { email, displayName: username } = result.user;
+      OAuthLoginFn(email, username);
+      reset();
+    } catch (error) {
+      console.error("Error Logging In", error);
+    }
+  };
+  const githubLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, githubProvider);
+      const { email, displayName: username } = result.user;
+      OAuthLoginFn(email, username);
+      reset();
+    } catch (error) {
+      console.error("Error Logging In", error);
+    }
+  };
 
   const submitData = async (formData) => {
     try {
-      dispatch(
-        userLogin({
-          email: formData.email,
-          password: formData.password,
-        })
+      const res = dispatch(
+        userLogin({ email: formData.email, password: formData.password })
       );
+      await handleChatEngineLogic(formData);
+      // res.then((result) => {
+      //   if (result && result.meta.requestStatus) {
+      //     if (result.meta.requestStatus === "rejected") {
+      //       toast.error(result.payload);
+      //     } else if (result.meta.requestStatus === "fulfilled") {
+      //       console.log(result.payload);
+      //       toast.success(`Happy Tasking, ${result.payload.name}!`);
+      //       closeLoginFn();
+      //     }
+      //   }
+      // });
+    } catch (error) {
+      console.error("Error Logging In", error);
+    }
+  };
 
-      await generateUserToken();
+  const handleChatEngineLogic = async (formData) => {
+    try {
       const chatEngineUser = {
         username: formData.username,
-        secret: formData.password,
+        secret: formData.username,
+        first_name: formData.email,
         // Add any additional fields as needed (e.g., first_name, last_name, custom_json)
       };
+      console.log(chatEngineUser);
       const response = await fetch("https://api.chatengine.io/users/", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "PRIVATE-KEY": "793945c6-7d22-40ee-9fe1-952221fd4598",
+          "PRIVATE-KEY": "93c6a32e-3a67-49f7-b014-3403adb5790b",
         },
         body: JSON.stringify(chatEngineUser),
       });
@@ -64,61 +123,34 @@ const LoginModal = ({ closeLoginFn }) => {
         throw new Error("Failed to create user in ChatEngine");
       }
 
-      const responseData = await response.json(); // Parse response body as JSON
-      // Log the user data returned from ChatEngine
-      const res = responseData;
-      onAuth({ ...res, secret: formData.password });
-      console.log(user);
-      // Handle success (redirect, show success message, etc.)
+      const responseData = await response.json();
+
+      console.log(responseData);
     } catch (error) {
-      console.error("Error signing up:", error);
-      // Handle error (show error message, allow user to retry, etc.)
+      console.error("Error with ChatEngine logic:", error);
     }
   };
 
-  const dropIn = {
-    hidden: {
-      y: "-100vh",
-      opacity: 0,
-    },
-    visible: {
-      y: "0",
-      opacity: 1,
-      transition: {
-        duration: 0.1,
-        type: "spring",
-        damping: 25,
-        stiffness: 500,
-      },
-    },
-    exit: {
-      y: "100vh",
-      opacity: 0,
-    },
-  };
-
-  const buttonVariants = {
-    whileHover: {
-      scale: 1.05,
-      transition: { duration: 0.1, ease: "linear" },
-    },
-    whileTap: {
-      scale: 0.75,
-      transition: { duration: 0.1, ease: "linear" },
-    },
-  };
   return (
     <Backdrop onClick={closeLoginFn}>
       <motion.form
-        variants={dropIn}
+        variants={framerdropIn}
         initial="hidden"
         animate="visible"
         exit="exit"
         onSubmit={handleSubmit(submitData)}
         onClick={(e) => e.stopPropagation()}
+        onKeyPress={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+            handleSubmit(submitData)();
+          }
+        }}
         className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-md mx-auto bg-white relative"
       >
         <motion.button
+          type="button"
           whileTap={{
             scale: 0.75,
             transition: { duration: 0.1, ease: "linear" },
@@ -159,7 +191,7 @@ const LoginModal = ({ closeLoginFn }) => {
               {...register("email")}
               id="email"
               className="flex h-10 min-w-full rounded-md border border-input bg-background outline outline-2 outline-gray-500 px-3 py-2 text-sm "
-              placeholder="Username"
+              placeholder="Email"
               type="email"
             />
             {errors.email && (
@@ -187,7 +219,7 @@ const LoginModal = ({ closeLoginFn }) => {
         <div className="items-center p-6 flex flex-col space-y-4">
           <div className="flex flex-col space-y-2">
             <motion.button
-              variants={buttonVariants}
+              variants={framerButtonVariants}
               whileTap="whileTap"
               whileHover="whileHover"
               className="rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-black text-white hover:bg-Hover h-10 px-4 py-2 w-full"
@@ -197,7 +229,9 @@ const LoginModal = ({ closeLoginFn }) => {
             </motion.button>
             {/* GitHub Login */}
             <motion.button
-              variants={buttonVariants}
+              type="button"
+              variants={framerButtonVariants}
+              onClick={githubLogin}
               whileHover="whileHover"
               whileTap="whileTap"
               className="rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-[#444] h-10 px-4 py-2 w-full flex items-center justify-center bg-[#333] text-white"
@@ -208,6 +242,7 @@ const LoginModal = ({ closeLoginFn }) => {
                 height="24"
                 viewBox="0 0 24 24"
                 fill="none"
+                type="button"
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
@@ -221,7 +256,9 @@ const LoginModal = ({ closeLoginFn }) => {
             </motion.button>
             {/* Google Login */}
             <motion.button
-              variants={buttonVariants}
+              type="button"
+              variants={framerButtonVariants}
+              onClick={googleLogin}
               whileHover="whileHover"
               whileTap="whileTap"
               className="rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-[#ff2a4d]/60 h-10 px-4 py-2 w-full flex items-center justify-center bg-[#ff2a4d] text-white"
@@ -230,6 +267,7 @@ const LoginModal = ({ closeLoginFn }) => {
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
                 height="24"
+                type="button"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"

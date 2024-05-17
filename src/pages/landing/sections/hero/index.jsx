@@ -30,8 +30,8 @@ export const Hero = () => {
           <Lottie animationData={scrollAnimation} loop={true} />
         </motion.a>
       </div>
-      <div className="absolute top-[50] left-0 w-[30%] h-full bg-no-repeat  bg-illustration-hero-left"></div>
-      <div className="absolute  top-[50] right-0 w-[30%] h-full bg-no-repeat  bg-illustration-hero-right"></div>
+      <div className="absolute top-1/2 transform -translate-y-1/2 left-0 w-[30%] h-full bg-no-repeat bg-center bg-illustration-hero-left opacity-50"></div>
+      <div className="absolute top-1/2 transform -translate-y-1/2 right-0 w-[30%] h-full bg-no-repeat bg-center bg-illustration-hero-right opacity-50"></div>
     </section>
   );
 };

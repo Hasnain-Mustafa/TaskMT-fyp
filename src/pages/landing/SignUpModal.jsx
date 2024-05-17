@@ -5,9 +5,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { MdCancel } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import Backdrop from "./Backdrop";
+import Backdrop from "../../components/Backdrop";
 import { motion } from "framer-motion";
-import { registerUser } from "../../features/auth/authActions";
+import {
+  registerUser,
+  registerWithOAuth,
+} from "../../features/auth/authActions";
+import {
+  auth,
+  githubProvider,
+  googleProvider,
+} from "../../utils/firebaseConfig";
+import { signInWithPopup } from "firebase/auth";
+import { toast } from "react-toastify";
 
 const SignUpModal = ({ closeSignUpFn }) => {
   const {
@@ -46,30 +56,82 @@ const SignUpModal = ({ closeSignUpFn }) => {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm({
     resolver: zodResolver(signUpSchema),
   });
   const [isProjectManager, setIsProjectManager] = useState(false);
 
-  const navigate = useNavigate();
+  const OAuthSignup = (email, displayName, photoURL) => {
+    const res = dispatch(
+      registerWithOAuth({
+        email,
+        name: displayName,
+        isManager: isProjectManager,
+        photoURL,
+      })
+    );
+    res.then((result) => {
+      if (result && result.meta.requestStatus) {
+        if (result.meta.requestStatus === "rejected") {
+          toast.error(result.payload);
+        } else if (result.meta.requestStatus === "fulfilled") {
+          toast.success("SignUp Successful!");
+          closeSignUpFn();
+        }
+      }
+    });
+  };
 
-  useEffect(() => {
-    // redirect user to login page if registration was successful
-    if (success) navigate("/login");
-    // redirect authenticated user to profile screen
-    if (userInfo) navigate("/");
-  }, [navigate, userInfo, success]);
+  const handleGoogleSignUp = async () => {
+    try {
+      reset();
+      const result = await signInWithPopup(auth, googleProvider);
+      const { email, displayName, photoURL } = result.user;
+      OAuthSignup(email, displayName, photoURL);
+      closeSignUpFn();
+    } catch (error) {
+      toast.error("Google Login Failed");
+      console.error("Google sign-up error:", error);
+    }
+  };
+
+  const handleGithubSignUp = async () => {
+    try {
+      reset();
+      const result = await signInWithPopup(auth, githubProvider);
+      const { email, displayName, photoURL } = result.user;
+      console.log(result.user);
+      OAuthSignup(email, displayName, photoURL);
+      closeSignUpFn();
+      // Redirect after successful sign-up
+    } catch (error) {
+      console.error("GitHub sign-up error:", error);
+      // Handle sign-up error
+    }
+  };
 
   const submitformData = async (formData) => {
     try {
-      dispatch(
+      const res = dispatch(
         registerUser({
           email: formData.email,
           name: formData.name,
           password: formData.password,
           isManager: isProjectManager,
+          photoURL: "",
         })
       );
+      res.then((result) => {
+        if (result && result.meta.requestStatus) {
+          if (result.meta.requestStatus === "rejected") {
+            toast.error(result.payload);
+          } else if (result.meta.requestStatus === "fulfilled") {
+            toast.success("SignUp Successful!");
+            closeSignUpFn();
+          }
+        }
+      });
     } catch (error) {
       console.error("Error signing up:", error);
       // Handle error (show error message, allow user to retry, etc.)
@@ -120,6 +182,7 @@ const SignUpModal = ({ closeSignUpFn }) => {
         className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-md mx-auto bg-white relative"
       >
         <motion.button
+          type="button"
           whileTap={{
             scale: 0.75,
             transition: { duration: 0.1, ease: "linear" },
@@ -234,9 +297,11 @@ const SignUpModal = ({ closeSignUpFn }) => {
               Sign Up
             </motion.button>
             <motion.button
+              type="button"
               variants={buttonVariants}
               whileTap="whileTap"
               whileHover="whileHover"
+              onClick={handleGithubSignUp}
               className="rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-[#444] h-10 px-4 py-2 w-full flex items-center justify-center bg-[#333] text-white"
             >
               <svg
@@ -257,9 +322,11 @@ const SignUpModal = ({ closeSignUpFn }) => {
               SignUp with GitHub
             </motion.button>
             <motion.button
+              type="button"
               variants={buttonVariants}
               whileTap="whileTap"
               whileHover="whileHover"
+              onClick={handleGoogleSignUp}
               className="rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-[#ff2a4d]/60 h-10 px-4 py-2 w-full flex items-center justify-center bg-[#ff2a4d] text-white"
             >
               <svg
@@ -268,6 +335,7 @@ const SignUpModal = ({ closeSignUpFn }) => {
                 height="24"
                 viewBox="0 0 24 24"
                 fill="none"
+                type="button"
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
