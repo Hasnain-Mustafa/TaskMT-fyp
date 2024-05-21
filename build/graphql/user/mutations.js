@@ -14,4 +14,5 @@ exports.mutations = `#graphql
     signUpWithOAuth(email:String, name:String,isManager: Boolean, photoURL:String) :String
     updateProfilePicture(email:String, photoURL: String):User
     generateOAuthToken(email:String!):Token
+    subscribe(email: String!): SubscriptionResponse
     `;

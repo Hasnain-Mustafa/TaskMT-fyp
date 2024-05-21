@@ -91,7 +91,7 @@ export interface CreateTaskInput {
   taskAssigneeEmail: string;
   projectId: string;
   taskCreatorId: string
-  turnedInAt: string
+  turnedInAt: string;
 }
 export interface getProjectTasksPayload{
   projectId: string
@@ -323,7 +323,7 @@ export const deleteProject = async (_: any, { projectId }: { projectId: string }
 
 export const updateProject = async (
   _: any,
-  { projectId, assigneeEmails, ...updatedFields }: { projectId: string; assigneeEmails: string[]; [key: string]: any }
+  { projectId,  ...updatedFields }: { projectId: string; [key: string]: any }
 ) => {
   try {
     // Check if the project exists
@@ -335,42 +335,16 @@ export const updateProject = async (
       throw new Error(`Project with ID ${projectId} not found.`);
     }
 
-    // Fetch the project to verify assigneeEmails
-    if (assigneeEmails && assigneeEmails.length > 0) {
-      let allUsersFound = true;
-
-      // Check if all users exist
-      await Promise.all(assigneeEmails.map(async (assigneeEmail) => {
-        const user = await prismaClient.user.findUnique({
-          where: { email: assigneeEmail }
-        });
-        if (!user) {
-          console.error(`User with email ${assigneeEmail} not found.`);
-          allUsersFound = false;
-        }
-      }));
-
-      if (!allUsersFound) {
-        throw new Error('Not all users were found. Project updation aborted.');
-      }
-
-      // Update the project and connect the assignees
-      await prismaClient.project.update({
-        where: { id: projectId },
-        data: {
-          ...updatedFields,
-          assignees: { connect: assigneeEmails.map(email => ({ email })) }
-        }
-      });
-    } else {
+ 
+    
       // Update the project without updating the assignees
-      await prismaClient.project.update({
+      const project= await prismaClient.project.update({
         where: { id: projectId },
         data: updatedFields
       });
-    }
+    
 
-    return `Project with ID ${projectId} has been updated successfully.`;
+    return project;
   } catch (error) {
     console.error('Error updating project:', error);
     throw new Error('Failed to update project');
@@ -489,11 +463,39 @@ export const deleteProjectMember = async (
     // });
     
     // console.log(projectsCreatedByUser);
+   
     export const createTask = async (payload: CreateTaskInput) => {
       try {
-        const { title, status, summary, type, priority, taskAssigneeEmail, projectId, dueDate, startDate , taskCreatorId,turnedInAt} = payload;
-    console.log(projectId)
-   
+        const {
+          title,
+          status,
+          summary,
+          type,
+          priority,
+          taskAssigneeEmail,
+          projectId,
+          dueDate,
+          startDate,
+          taskCreatorId,
+          turnedInAt
+        } = payload;
+    
+        // Validate that all required variables are present
+        if (
+          !title ||
+          !status ||
+          !summary ||
+          !type ||
+          !priority ||
+          !taskAssigneeEmail ||
+          !projectId ||
+          !dueDate ||
+          !startDate ||
+          !taskCreatorId
+        ) {
+          throw new Error("All fields are required.");
+        }
+    
         // Fetch the project to verify taskAssigneeEmail
         const project = await prismaClient.project.findUnique({
           where: { id: projectId }
@@ -517,6 +519,11 @@ export const deleteProjectMember = async (
           throw new Error(`User with email ${taskAssigneeEmail} is not assigned to the project.`);
         }
     
+        // Prepare the assignee URL
+        const assigneeURL = {
+          photoURL: taskAssignee.photoURL
+        };
+    
         // Create the task
         const createdTask = await prismaClient.task.create({
           data: {
@@ -528,32 +535,33 @@ export const deleteProjectMember = async (
             dueDate,
             startDate,
             turnedInAt,
+            assigneeURL,
             project: { connect: { id: projectId } },
-            taskAssignee: { connect: { email: taskAssigneeEmail } }, // Connect by user id
-            taskCreator: { connect: { id : taskCreatorId } }
-         
+            taskAssignee: { connect: { email: taskAssigneeEmail } },
+            taskCreator: { connect: { id: taskCreatorId } }
           }
         });
+    
         // Restructure the response object
-    const response = {
-      id: createdTask.id,
-      Title: createdTask.title,
-      Status: createdTask.status,
-      Summary: createdTask.summary,
-      type: createdTask.type,
-      priority: createdTask.priority,
-      dueDate: createdTask.dueDate,
-      startDate: createdTask.startDate,
-      taskAssigneeId: createdTask.taskAssigneeId,
-      projectId: createdTask.projectId,
-      taskCreatorId: createdTask.taskCreatorId
-    };
-
-    console.log(response);
-    return response;
-      
+        const response = {
+          id: createdTask.id,
+          Title: createdTask.title,
+          Status: createdTask.status,
+          Summary: createdTask.summary,
+          type: createdTask.type,
+          priority: createdTask.priority,
+          dueDate: createdTask.dueDate,
+          startDate: createdTask.startDate,
+          assigneeURL: createdTask.assigneeURL,
+          taskAssigneeId: createdTask.taskAssigneeId,
+          projectId: createdTask.projectId,
+          taskCreatorId: createdTask.taskCreatorId
+        };
+    
+        console.log(response);
+        return response;
+    
       } catch (error) {
-        
         throw error;
       }
     };
@@ -637,7 +645,8 @@ export const deleteProjectMember = async (
             taskAssigneeId: updatedTask.taskAssigneeId,
             projectId: updatedTask.projectId,
             taskCreatorId : updatedTask.taskCreatorId,
-            turnedInAt :updatedTask.turnedInAt
+            turnedInAt :updatedTask.turnedInAt,
+            assigneeURL: updatedTask.assigneeURL,
 
           };
         } else {
@@ -660,7 +669,8 @@ export const deleteProjectMember = async (
             taskAssigneeId: updatedTask.taskAssigneeId,
             projectId: updatedTask.projectId,
             taskCreatorId : updatedTask.taskCreatorId,
-            turnedInAt :updatedTask.turnedInAt
+            turnedInAt :updatedTask.turnedInAt,
+            assigneeURL: updatedTask.assigneeURL,
           };
         }
       } catch (error) {
@@ -749,7 +759,8 @@ export const getAllProjects = async (payload: getProjectsPayload) => {
           select: {
             id: true,
             name: true,
-            email: true
+            email: true,
+            photoURL: true
           }
         });
         return user;
@@ -767,6 +778,51 @@ export const getAllProjects = async (payload: getProjectsPayload) => {
   } catch (error) {
     console.error('Error fetching projects by creator ID:', error);
     throw new Error('Failed to fetch projects by creator ID');
+  }
+};
+export const getProjectById =async ({ projectId }: { projectId: string }) => {
+  try {
+    // Find the project with the provided projectId
+    const project = await prismaClient.project.findUnique({
+      where: {
+        id: projectId
+      }
+    });
+
+    if (!project) {
+      throw new Error('Project not found'); // Throw error if project not found
+    }
+
+    // Extract assigneeIds from the project
+    const { assigneeIds, ...projectData } = project;
+
+    // Fetch user details for each assigneeId
+    const assigneeDetails = await Promise.all(assigneeIds.map(async (assigneeId) => {
+      const user = await prismaClient.user.findUnique({
+        where: {
+          id: assigneeId
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          photoURL: true
+        }
+      });
+      return user;
+    }));
+
+    // Combine projectData with the transformed assignees array
+    const transformedProject = {
+      ...projectData,
+      assigneeDetails
+    };
+
+    return transformedProject; // Return the transformed project
+
+  } catch (error) {
+    console.error('Error fetching project by ID:', error);
+    throw new Error('Failed to fetch project by ID');
   }
 };
 
@@ -814,7 +870,8 @@ export const getAllProjectsAssigned = async (payload: getAssignedProjectsPayload
         select: {
           id: true,
           name: true,
-          email: true
+          email: true,
+          photoURL: true
         }
       });
       return user;
@@ -874,7 +931,8 @@ export const getCreatedTasks =  async (payload: getCreatedTasksPayload) => {
     startDate: task.startDate,
     taskAssigneeId: task.taskAssigneeId,
     projectId: task.projectId,
-    taskCreatorId: task.taskCreatorId
+    taskCreatorId: task.taskCreatorId,
+    assigneeURL: task.assigneeURL
   }));
 
   return formattedTasks;
@@ -908,7 +966,8 @@ export const getAssignedTasks =  async (payload: getAssignedTasksPayload) => {
     taskAssigneeId: task.taskAssigneeId,
     projectId: task.projectId,
     taskCreatorId: task.taskCreatorId,
-    turnedInAt: task.turnedInAt
+    turnedInAt: task.turnedInAt,
+    assigneeURL: task.assigneeURL
   }));
 
   return formattedTasks;

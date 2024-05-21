@@ -88,6 +88,7 @@ model Task {
   dueDate        String
   startDate      String
   turnedInAt     String
+  assigneeURL    Json // New field to store assignee URL as JSON
   taskAssignee   User    @relation(fields: [taskAssigneeId], name: "Assignee", references: [id])
   taskAssigneeId String  @db.ObjectId
   taskCreator    User    @relation(fields: [taskCreatorId], name: "Creator", references: [id])
@@ -96,4 +97,12 @@ model Task {
   projectId      String  @db.ObjectId
 
   @@map("tasks")
+}
+
+model Subscriber {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  email        String   @unique
+  subscribedOn DateTime @default(now())
+
+  @@map("subscribers")
 }

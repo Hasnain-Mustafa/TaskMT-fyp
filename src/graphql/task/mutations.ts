@@ -13,7 +13,7 @@ export const mutations = `
       projectId: ID,
       taskCreatorId: ID
       turnedInAt: String
-      ): Tasks
+      ): Taskss
   
       updateTask(
         taskId: ID!
@@ -27,7 +27,7 @@ export const mutations = `
         taskAssigneeId: String
         turnedInAt: String
       
-      ): Tasks
+      ): Taskss
       
       deleteTask(
         taskId: ID!

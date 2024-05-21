@@ -34,6 +34,16 @@ const queries = {
             throw new Error('Failed to fetch project');
         }
     }),
+    getProjectById: (_, { projectId }) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const res = yield (0, userService_1.getProjectById)({ projectId }); // Pass projectId directly
+            return res;
+        }
+        catch (error) {
+            console.error('Error fetching project:', error);
+            throw new Error('Failed to fetch project');
+        }
+    }),
 };
 const mutations = {
     createProject: (_, payload) => __awaiter(void 0, void 0, void 0, function* () {

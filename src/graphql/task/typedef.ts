@@ -28,7 +28,25 @@ export const typeDefs = `
     taskCreatorId : String!
     turnedInAt: String
   }
-  
+
+  type Taskss {
+    id: ID!
+    Title: String!
+    Status: String!
+    Summary: String!
+    type: String!
+    priority: String!
+    dueDate: String!
+    startDate: String!
+    taskAssigneeId: String
+    projectId: String! 
+    taskCreatorId : String!
+    turnedInAt: String
+    assigneeURL: Obj
+  }
+  type Obj {
+    photoURL: String
+  }
 
   type User{
     id:ID!

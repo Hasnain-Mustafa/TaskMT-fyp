@@ -16,7 +16,7 @@ exports.mutations = `
       projectId: ID,
       taskCreatorId: ID
       turnedInAt: String
-      ): Tasks
+      ): Taskss
   
       updateTask(
         taskId: ID!
@@ -30,7 +30,7 @@ exports.mutations = `
         taskAssigneeId: String
         turnedInAt: String
       
-      ): Tasks
+      ): Taskss
       
       deleteTask(
         taskId: ID!

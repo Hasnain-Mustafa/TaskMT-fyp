@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateProfilePicture = exports.generateOAuthToken = exports.signUpWithOAuth = exports.deleteNotifications = exports.deleteChats = exports.updateGoals = exports.deleteGoals = exports.addGoals = exports.getAllAssignedTasksById = exports.getAllCreatedTasksById = exports.getAssignedTasksById = exports.getCreatedTasksById = exports.getGoals = exports.getNotifications = exports.getChats = exports.getMemberById = exports.addChats = exports.addNotifications = exports.getAssignedTasks = exports.getCreatedTasks = exports.getAllProjectTasks = exports.getAllProjectsAssigned = exports.getAllProjects = exports.getUserById = exports.getUserByEmail = exports.decodeJWTToken = exports.generateUserToken = exports.updateTask = exports.deleteTask = exports.createTask = exports.deleteProjectMember = exports.updateProject = exports.deleteProject = exports.deleteProjects = exports.createProject = exports.signUpUser = void 0;
+exports.updateProfilePicture = exports.generateOAuthToken = exports.signUpWithOAuth = exports.deleteNotifications = exports.deleteChats = exports.updateGoals = exports.deleteGoals = exports.addGoals = exports.getAllAssignedTasksById = exports.getAllCreatedTasksById = exports.getAssignedTasksById = exports.getCreatedTasksById = exports.getGoals = exports.getNotifications = exports.getChats = exports.getMemberById = exports.addChats = exports.addNotifications = exports.getAssignedTasks = exports.getCreatedTasks = exports.getAllProjectTasks = exports.getAllProjectsAssigned = exports.getProjectById = exports.getAllProjects = exports.getUserById = exports.getUserByEmail = exports.decodeJWTToken = exports.generateUserToken = exports.updateTask = exports.deleteTask = exports.createTask = exports.deleteProjectMember = exports.updateProject = exports.deleteProject = exports.deleteProjects = exports.createProject = exports.signUpUser = void 0;
 const crypto_1 = require("crypto");
 const db_1 = require("../lib/db");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -220,7 +220,7 @@ const deleteProject = (_, { projectId }) => __awaiter(void 0, void 0, void 0, fu
 });
 exports.deleteProject = deleteProject;
 const updateProject = (_, _a) => __awaiter(void 0, void 0, void 0, function* () {
-    var { projectId, assigneeEmails } = _a, updatedFields = __rest(_a, ["projectId", "assigneeEmails"]);
+    var { projectId } = _a, updatedFields = __rest(_a, ["projectId"]);
     try {
         // Check if the project exists
         const existingProject = yield db_1.prismaClient.project.findUnique({
@@ -229,36 +229,12 @@ const updateProject = (_, _a) => __awaiter(void 0, void 0, void 0, function* () 
         if (!existingProject) {
             throw new Error(`Project with ID ${projectId} not found.`);
         }
-        // Fetch the project to verify assigneeEmails
-        if (assigneeEmails && assigneeEmails.length > 0) {
-            let allUsersFound = true;
-            // Check if all users exist
-            yield Promise.all(assigneeEmails.map((assigneeEmail) => __awaiter(void 0, void 0, void 0, function* () {
-                const user = yield db_1.prismaClient.user.findUnique({
-                    where: { email: assigneeEmail }
-                });
-                if (!user) {
-                    console.error(`User with email ${assigneeEmail} not found.`);
-                    allUsersFound = false;
-                }
-            })));
-            if (!allUsersFound) {
-                throw new Error('Not all users were found. Project updation aborted.');
-            }
-            // Update the project and connect the assignees
-            yield db_1.prismaClient.project.update({
-                where: { id: projectId },
-                data: Object.assign(Object.assign({}, updatedFields), { assignees: { connect: assigneeEmails.map(email => ({ email })) } })
-            });
-        }
-        else {
-            // Update the project without updating the assignees
-            yield db_1.prismaClient.project.update({
-                where: { id: projectId },
-                data: updatedFields
-            });
-        }
-        return `Project with ID ${projectId} has been updated successfully.`;
+        // Update the project without updating the assignees
+        const project = yield db_1.prismaClient.project.update({
+            where: { id: projectId },
+            data: updatedFields
+        });
+        return project;
     }
     catch (error) {
         console.error('Error updating project:', error);
@@ -359,7 +335,19 @@ exports.deleteProjectMember = deleteProjectMember;
 const createTask = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { title, status, summary, type, priority, taskAssigneeEmail, projectId, dueDate, startDate, taskCreatorId, turnedInAt } = payload;
-        console.log(projectId);
+        // Validate that all required variables are present
+        if (!title ||
+            !status ||
+            !summary ||
+            !type ||
+            !priority ||
+            !taskAssigneeEmail ||
+            !projectId ||
+            !dueDate ||
+            !startDate ||
+            !taskCreatorId) {
+            throw new Error("All fields are required.");
+        }
         // Fetch the project to verify taskAssigneeEmail
         const project = yield db_1.prismaClient.project.findUnique({
             where: { id: projectId }
@@ -378,6 +366,10 @@ const createTask = (payload) => __awaiter(void 0, void 0, void 0, function* () {
         if (!assigneeExists) {
             throw new Error(`User with email ${taskAssigneeEmail} is not assigned to the project.`);
         }
+        // Prepare the assignee URL
+        const assigneeURL = {
+            photoURL: taskAssignee.photoURL
+        };
         // Create the task
         const createdTask = yield db_1.prismaClient.task.create({
             data: {
@@ -389,8 +381,9 @@ const createTask = (payload) => __awaiter(void 0, void 0, void 0, function* () {
                 dueDate,
                 startDate,
                 turnedInAt,
+                assigneeURL,
                 project: { connect: { id: projectId } },
-                taskAssignee: { connect: { email: taskAssigneeEmail } }, // Connect by user id
+                taskAssignee: { connect: { email: taskAssigneeEmail } },
                 taskCreator: { connect: { id: taskCreatorId } }
             }
         });
@@ -404,6 +397,7 @@ const createTask = (payload) => __awaiter(void 0, void 0, void 0, function* () {
             priority: createdTask.priority,
             dueDate: createdTask.dueDate,
             startDate: createdTask.startDate,
+            assigneeURL: createdTask.assigneeURL,
             taskAssigneeId: createdTask.taskAssigneeId,
             projectId: createdTask.projectId,
             taskCreatorId: createdTask.taskCreatorId
@@ -479,7 +473,8 @@ const updateTask = (_, _c) => __awaiter(void 0, void 0, void 0, function* () {
                 taskAssigneeId: updatedTask.taskAssigneeId,
                 projectId: updatedTask.projectId,
                 taskCreatorId: updatedTask.taskCreatorId,
-                turnedInAt: updatedTask.turnedInAt
+                turnedInAt: updatedTask.turnedInAt,
+                assigneeURL: updatedTask.assigneeURL,
             };
         }
         else {
@@ -501,7 +496,8 @@ const updateTask = (_, _c) => __awaiter(void 0, void 0, void 0, function* () {
                 taskAssigneeId: updatedTask.taskAssigneeId,
                 projectId: updatedTask.projectId,
                 taskCreatorId: updatedTask.taskCreatorId,
-                turnedInAt: updatedTask.turnedInAt
+                turnedInAt: updatedTask.turnedInAt,
+                assigneeURL: updatedTask.assigneeURL,
             };
         }
     }
@@ -584,7 +580,8 @@ const getAllProjects = (payload) => __awaiter(void 0, void 0, void 0, function* 
                     select: {
                         id: true,
                         name: true,
-                        email: true
+                        email: true,
+                        photoURL: true
                     }
                 });
                 return user;
@@ -600,6 +597,44 @@ const getAllProjects = (payload) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.getAllProjects = getAllProjects;
+const getProjectById = ({ projectId }) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Find the project with the provided projectId
+        const project = yield db_1.prismaClient.project.findUnique({
+            where: {
+                id: projectId
+            }
+        });
+        if (!project) {
+            throw new Error('Project not found'); // Throw error if project not found
+        }
+        // Extract assigneeIds from the project
+        const { assigneeIds } = project, projectData = __rest(project, ["assigneeIds"]);
+        // Fetch user details for each assigneeId
+        const assigneeDetails = yield Promise.all(assigneeIds.map((assigneeId) => __awaiter(void 0, void 0, void 0, function* () {
+            const user = yield db_1.prismaClient.user.findUnique({
+                where: {
+                    id: assigneeId
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    photoURL: true
+                }
+            });
+            return user;
+        })));
+        // Combine projectData with the transformed assignees array
+        const transformedProject = Object.assign(Object.assign({}, projectData), { assigneeDetails });
+        return transformedProject; // Return the transformed project
+    }
+    catch (error) {
+        console.error('Error fetching project by ID:', error);
+        throw new Error('Failed to fetch project by ID');
+    }
+});
+exports.getProjectById = getProjectById;
 // export const getAllProjects = async (payload: getProjectsPayload) => {
 //   try {
 //     const {creatorId} =payload;
@@ -639,7 +674,8 @@ const getAllProjectsAssigned = (payload) => __awaiter(void 0, void 0, void 0, fu
                     select: {
                         id: true,
                         name: true,
-                        email: true
+                        email: true,
+                        photoURL: true
                     }
                 });
                 return user;
@@ -694,7 +730,8 @@ const getCreatedTasks = (payload) => __awaiter(void 0, void 0, void 0, function*
             startDate: task.startDate,
             taskAssigneeId: task.taskAssigneeId,
             projectId: task.projectId,
-            taskCreatorId: task.taskCreatorId
+            taskCreatorId: task.taskCreatorId,
+            assigneeURL: task.assigneeURL
         }));
         return formattedTasks;
     }
@@ -727,7 +764,8 @@ const getAssignedTasks = (payload) => __awaiter(void 0, void 0, void 0, function
             taskAssigneeId: task.taskAssigneeId,
             projectId: task.projectId,
             taskCreatorId: task.taskCreatorId,
-            turnedInAt: task.turnedInAt
+            turnedInAt: task.turnedInAt,
+            assigneeURL: task.assigneeURL
         }));
         return formattedTasks;
     }

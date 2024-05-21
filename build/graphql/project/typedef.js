@@ -48,5 +48,6 @@ exports.typeDefs = `
     id: ID!
     name: String!
     email: String!
+    photoURL: String
   }
 `;

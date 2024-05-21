@@ -12,16 +12,17 @@ exports.mutations = `
       budget: Int,
       assigneeEmails: [String]
       creatorId: ID): Projectss
+
       updateProject(
         projectId: ID!
         title: String
-        status: String
+    
         summary: String
         weeks: Int,
         budget: Int,
-        assigneeEmails: [String]
       
-      ): String
+      
+      ): Projectss
       
       deleteProject(
         projectId: ID!

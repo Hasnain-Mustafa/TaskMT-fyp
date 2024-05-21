@@ -1,3 +1,4 @@
+import { prismaClient } from '../../lib/db';
 import {
   signUpTypes,
   signUpUser,
@@ -100,6 +101,7 @@ const queries = {
 };
 
 const mutations = {
+  
   signUpUser: async (_: any, payload: signUpTypes) => {
     const res = await signUpUser(payload);
     if (res) {
@@ -139,6 +141,32 @@ const mutations = {
     const updatedUser = await updateProfilePicture(payload);
     return updatedUser;
   },
+  subscribe: async (_: any,  { email }: { email: string }) => {
+    try {
+      // Check if the email already exists
+      const existingSubscriber = await prismaClient.subscriber.findUnique({
+        where: { email },
+      });
+      if (existingSubscriber) {
+        return { success: false, message: "Email already subscribed." };
+      }
+
+      // Save new subscriber
+      await prismaClient.subscriber.create({
+        data: {
+          email,
+        },
+      });
+
+      return { success: true, message: "You've been subscribed successfully!" };
+    } catch (error) {
+      console.error("Subscription error:", error);
+      return { success: false, message: "Failed to subscribe." };
+    }
+  },
+
+  
+
   deleteGoals,
   updateGoals,
   deleteChats,

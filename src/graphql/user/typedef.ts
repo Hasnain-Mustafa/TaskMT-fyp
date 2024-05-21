@@ -72,6 +72,9 @@ export const typeDefs = `#graphql
         userId: ID!
         
       }
-      
+      type SubscriptionResponse {
+        success: Boolean!
+        message: String!
+      }
      
 `;

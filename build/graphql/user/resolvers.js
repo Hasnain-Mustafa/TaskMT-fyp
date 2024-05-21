@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolvers = void 0;
+const db_1 = require("../../lib/db");
 const userService_1 = require("../../services/userService");
 const queries = {
     getCurrentLoggedInUser: (_, parameters, context) => __awaiter(void 0, void 0, void 0, function* () {
@@ -122,6 +123,28 @@ const mutations = {
     updateProfilePicture: (_, payload) => __awaiter(void 0, void 0, void 0, function* () {
         const updatedUser = yield (0, userService_1.updateProfilePicture)(payload);
         return updatedUser;
+    }),
+    subscribe: (_, { email }) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            // Check if the email already exists
+            const existingSubscriber = yield db_1.prismaClient.subscriber.findUnique({
+                where: { email },
+            });
+            if (existingSubscriber) {
+                return { success: false, message: "Email already subscribed." };
+            }
+            // Save new subscriber
+            yield db_1.prismaClient.subscriber.create({
+                data: {
+                    email,
+                },
+            });
+            return { success: true, message: "You've been subscribed successfully!" };
+        }
+        catch (error) {
+            console.error("Subscription error:", error);
+            return { success: false, message: "Failed to subscribe." };
+        }
     }),
     deleteGoals: userService_1.deleteGoals,
     updateGoals: userService_1.updateGoals,
