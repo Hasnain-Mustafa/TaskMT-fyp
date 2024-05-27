@@ -10,6 +10,7 @@ import {
   ColumnSeries,
   DataLabel,
 } from "@syncfusion/ej2-react-charts";
+import Typography from "@mui/material/Typography";
 import {
   useGetAllAssignedTasksByIdQuery,
   useGetAllCreatedTasksByIdQuery,
@@ -18,7 +19,6 @@ import { setBarData } from "../../features/tasks/taskSlice";
 import { useSelector, useDispatch } from "react-redux";
 import { gql } from "@apollo/client";
 import client from "../../ApolloClient";
-import { barPrimaryXAxis, barPrimaryYAxis } from "../../data/dummy";
 import { ChartsHeader } from "../../components";
 import { useStateContext } from "../../contexts/ContextProvider";
 
@@ -27,6 +27,19 @@ const Bar = () => {
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth);
   const { barData } = useSelector((state) => state.tasks);
+
+  const barPrimaryXAxis = {
+    valueType: "Category",
+    interval: 1,
+    majorGridLines: { width: 0 },
+  };
+  const barPrimaryYAxis = {
+    majorGridLines: { width: 0 },
+    majorTickLines: { width: 0 },
+    lineStyle: { width: 0 },
+    labelStyle: { color: "transparent" },
+  };
+
   const {
     data: tasksData,
     isFetching,
@@ -160,29 +173,62 @@ const Bar = () => {
       },
     },
   ];
+
+  const hasData = barData && barData.some((data) => data.length > 0);
+
   return (
     <div className="m-4 md:m-10 mt-24 p-10 bg-white dark:bg-secondary-dark-bg rounded-3xl">
       <ChartsHeader category="Bar" title="Task Status Counts by Assignee" />
-      <div className=" w-full">
-        <ChartComponent
-          id="charts"
-          primaryXAxis={barPrimaryXAxis}
-          primaryYAxis={barPrimaryYAxis}
-          chartArea={{ border: { width: 0 } }}
-          tooltip={{ enable: true }}
-          background={currentMode === "Dark" ? "#33373E" : "#fff"}
-          legendSettings={{ background: "white" }}
-        >
-          <Inject
-            services={[ColumnSeries, Legend, Tooltip, Category, DataLabel]}
-          />
-          <SeriesCollectionDirective>
-            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-            {barCustomSeries.map((item, index) => (
-              <SeriesDirective key={index} {...item} />
-            ))}
-          </SeriesCollectionDirective>
-        </ChartComponent>
+      <div className="w-full">
+        {hasData ? (
+          <div
+            className="chart-container lg:w-[40rem] xl:w-full"
+            style={{
+              overflowX: "auto",
+              // width: "100%",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <div
+              style={{
+                minWidth: "1024px",
+                display: "inline-block",
+              }}
+            >
+              <ChartComponent
+                id="charts"
+                primaryXAxis={barPrimaryXAxis}
+                primaryYAxis={barPrimaryYAxis}
+                chartArea={{ border: { width: 0 } }}
+                tooltip={{ enable: true }}
+                background={currentMode === "Dark" ? "#33373E" : "#fff"}
+                legendSettings={{ background: "white" }}
+              >
+                <Inject
+                  services={[
+                    ColumnSeries,
+                    Legend,
+                    Tooltip,
+                    Category,
+                    DataLabel,
+                  ]}
+                />
+                <SeriesCollectionDirective>
+                  {barCustomSeries.map((item, index) => (
+                    <SeriesDirective key={index} {...item} />
+                  ))}
+                </SeriesCollectionDirective>
+              </ChartComponent>
+            </div>
+          </div>
+        ) : (
+          <Typography
+            variant="h6"
+            style={{ textAlign: "center", marginTop: "20px", color: "#999" }}
+          >
+            No data to display
+          </Typography>
+        )}
       </div>
     </div>
   );

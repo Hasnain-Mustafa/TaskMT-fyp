@@ -5,11 +5,11 @@
 }
 .nav-item,
 .navbar {
-  z-index: 8888;
+  z-index: 4444;
 }
 @media screen and (max-width: 800px) {
   .sidebar {
-    z-index: 10000000;
+    z-index: 99999;
   }
 }
 
@@ -71,51 +71,51 @@ img#ce-ice-breaker-gif {
   margin-right: 10px;
   cursor: pointer;
 }
-.ce-chat-engine {
-  font-family: inherit !important;
+
+.ce-message-bubble,
+.ce-my-message-bubble,
+.ce-my-message-sinding-bubble {
+  background-color: #111 !important;
 }
 
 @media (max-width: 481px) {
-  /* Styles for devices with a width less than or equal to 374px (mobile devices) */
   .ce-chat-engine {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    align-items: center !important;
-    justify-content: center !important;
-    position: relative;
-    height: 100%;
-    margin: 5rem 0 0 0;
-    box-sizing: border-box;
-    font-family: sans-serif !important;
-  }
-  .ce-chat-header {
-    overflow: hidden;
+    margin-top: 4rem !important;
   }
 
-  .ce-ice-breaker-gif {
-    height: 6.25rem;
-    width: 5.25rem !important;
+  .ce-chat-form-container {
+    padding-top: 6rem !important;
   }
-  .ce-mobile-chat-settings-button {
-    background-color: #333 !important;
-    color: white !important;
-    right: 30px !important;
-    margin-top: -0.7rem;
+  .anticon-close {
+    top: 70px !important;
+    color: #111 !important;
   }
-
-  .ce-default-button.undefined {
-    background-color: #333 !important;
-    color: white !important;
+  .anticon-left {
+    top: -30px !important;
+    color: black;
   }
 
-  .ce-mobile-chat-list-button {
-    background-color: #333 !important;
-    color: white !important;
-    padding-top: 0.5rem !important;
-    left: 30px !important;
-    margin-top: -0.7rem;
+  .ce-chat-settings-mobile-option {
+    color: #111 !important;
   }
+}
+
+.ce-input,
+.ce-text-input {
+  color: #000 !important;
+}
+
+.ce-section-title-container,
+.ce-person-title-container {
+  color: #111 !important;
+}
+
+.ce-chat-title-container {
+  color: #111 !important;
+}
+
+.ce-options-drop-down {
+  color: black !important;
 }
 /* .ce-default-button, */
 .ce-chat-form-button {
@@ -129,6 +129,10 @@ img#ce-ice-breaker-gif {
   border-radius: 50px !important;
   height: 2.125rem !important;
   margin-left: 1rem !important;
+}
+.ce-primary-button {
+  background-color: black !important;
+  color: white !important;
 }
 
 .custom-attachment-input .icon-wrapper {
@@ -156,7 +160,31 @@ div.ce-wrapper {
   width: 100vw !important;
   height: 85vh !important;
 }
-/* Add this to your CSS file or inside a <style> tag in your React component */
-/* Add this to your CSS file or inside a <style> tag in your React component */
-/* Add this to your CSS file or within a <style> tag in your React component */
-/* Add this to your CSS file or within a <style> tag in your React component */
+
+/* General styles for the Kanban wrapper */
+.kanban-wrapper {
+  overflow-x: hidden; /* Hide horizontal overflow for desktop screens */
+  overflow-y: hidden; /* Hide vertical overflow for desktop screens */
+}
+
+/* Media query for tablet and mobile screens */
+@media (max-width: 1024px) {
+  /* .kanban-wrapper {
+    background: #000;
+    overflow-x: auto;
+    overflow-y: auto;
+  } */
+  .e-kanban .e-kanban-table {
+    min-width: 700px;
+  }
+}
+
+/* Further customization for very small screens (e.g., mobile devices) */
+@media (max-width: 768px) {
+  .e-kanban .e-kanban-content {
+    flex-direction: column;
+  }
+  .e-kanban .e-kanban-table {
+    min-width: 950px;
+  }
+}

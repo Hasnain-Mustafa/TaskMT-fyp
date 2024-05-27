@@ -4,7 +4,7 @@ const getStatusColor = (status) => {
       return "#FF0000"; // Red
     case "InProgress":
       return "#FFC0CB"; // Pink
-    case "Testing":
+    case "Review":
       return "#FFFF00"; // Yellow
     case "Close":
       return "#008000"; // Green

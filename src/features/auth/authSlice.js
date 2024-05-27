@@ -16,10 +16,10 @@ import {
 const userToken = localStorage.getItem("userToken")
   ? localStorage.getItem("userToken")
   : null;
-// const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 const initialState = {
   loading: false,
-  userInfo: null,
+  userInfo,
   userToken, // for storing the JWT
   notifications: [],
   showBadge: false,
@@ -44,7 +44,6 @@ const authSlice = createSlice({
       state.chats = [];
       // state.showBadge = true;
       state.chats = payload;
-      console.log(payload);
     },
     setNotifications: (state, { payload }) => {
       state.notifications = [];
@@ -52,10 +51,10 @@ const authSlice = createSlice({
     },
     setGoals: (state, { payload }) => {
       state.goals = payload;
-      console.log(payload);
     },
     logout: (state) => {
-      localStorage.removeItem("userToken"); // deletes token from storage
+      localStorage.removeItem("userToken");
+      localStorage.removeItem("userInfo");
       state.loading = false;
       state.userInfo = null;
       state.userToken = null;
@@ -84,7 +83,6 @@ const authSlice = createSlice({
       })
       .addCase(userLogin.fulfilled, (state, action) => {
         state.loading = false;
-
         state.userInfo = action.payload;
         state.userToken = action.payload.userToken;
       })
@@ -99,7 +97,6 @@ const authSlice = createSlice({
       })
       .addCase(updatePicture.fulfilled, (state, action) => {
         state.loading = false;
-        console.log(action.payload);
         state.userInfo = {
           ...state.userInfo,
           photoURL: action.payload.photoURL,

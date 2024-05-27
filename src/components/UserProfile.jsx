@@ -1,8 +1,9 @@
 import React from "react";
 import { MdOutlineCancel } from "react-icons/md";
+import { FaRegUser } from "react-icons/fa";
+import { CiInboxIn } from "react-icons/ci";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from ".";
-import { userProfileData } from "../data/dummy";
 import { useStateContext } from "../contexts/ContextProvider";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../features/auth/authSlice";
@@ -18,6 +19,23 @@ const UserProfile = ({ screenWidth }) => {
     // Call setIsClicked to close the modal
     setIsClicked(false);
   };
+
+  const userProfileData = [
+    {
+      icon: <FaRegUser />,
+      title: "My Profile",
+      desc: "Account Settings",
+      iconColor: "#03C9D7",
+      iconBg: "#E5FAFB",
+    },
+    {
+      icon: <CiInboxIn />,
+      title: "My Inbox",
+      desc: "Messages & Emails",
+      iconColor: "rgb(0, 194, 146)",
+      iconBg: "rgb(235, 250, 242)",
+    },
+  ];
 
   const handleLogout = () => {
     dispatch(logout());

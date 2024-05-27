@@ -90,11 +90,9 @@ const projectSlice = createSlice({
         state.loading = false;
         state.success = true;
         const idsToDelete = new Set(action.payload);
-        console.log(idsToDelete); // 'payload' should be an array of project IDs
         state.projects = state.projects.filter(
           (project) => !idsToDelete.has(project.id)
         );
-        console.log(state.projects);
       })
 
       .addCase(deleteProjects.rejected, (state, action) => {

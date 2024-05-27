@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { updatePicture } from "../features/auth/authActions";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -51,7 +51,7 @@ const UpdateProfilePicture = () => {
   };
 
   return (
-    <div className="mt-28 max-w-72 ml-20 md:mx-auto bg-white relative p-4">
+    <div className="mt-28 max-w-72 mx-auto bg-white relative p-4 shadow-xl rounded-xl">
       {/* Profile Picture */}
       <div className="flex flex-col items-center mb-4">
         {/* Display current profile picture or placeholder icon */}

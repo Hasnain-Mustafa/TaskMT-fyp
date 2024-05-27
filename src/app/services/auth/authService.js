@@ -1,59 +1,11 @@
-// import { createApi,fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-// import { gql } from '@apollo/client';
-
-// import { graphqlRequestBaseQuery } from '@rtk-query/graphql-request-base-query'
-// export const client= new GraphQLClient("http://localhost:3000/graphql")
-
-// export const authApi = createApi({
-//   baseQuery: graphqlRequestBaseQuery({
-//     client,
-//     prepareHeaders: (headers, { getState }) => {
-//       const state = getState()
-//       const token = state.auth.userInfo.generateUserToken
-//       if (token) {
-//         headers.set("authorization", token)
-//       }
-
-//   console.log("Access Token:", token)
-
-//       return headers
-//     },
-//   }),
-//   reducerPath: 'authApi',
-
-//   endpoints: (builder) => ({
-
-//     GetCurrentLoggedInUser: builder.query({
-
-//         body:gql `
-//         query GetCurrentLoggedInUser {
-//           getCurrentLoggedInUser {
-//             id
-//             email
-//             name
-//             isManager
-//             password
-//             assignedProjectIds
-//           }
-//         }
-
-//         `,
-
-//     }),
-//   }),
-// });
-
-// export const {  useGetCurrentLoggedInUserQuery} = authApi;
 import { graphqlRequestBaseQuery } from "@rtk-query/graphql-request-base-query";
-
 import { createApi } from "@reduxjs/toolkit/query/react";
-
 import { gql } from "@apollo/client"; // Assuming you're using Apollo Client
 
 export const authApi = createApi({
   reducerPath: "api",
   baseQuery: graphqlRequestBaseQuery({
-    url: "http://localhost:3000/graphql",
+    url: "https://taskmt-server.fly.dev/graphql",
 
     prepareHeaders: (headers, { getState }) => {
       // Retrieve token from redux store

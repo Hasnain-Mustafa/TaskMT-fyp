@@ -17,7 +17,6 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export const RoomPage = () => {
-  console.log("in room");
   const [numParticipants, setNumParticipants] = useState(0);
   const [displayOptions, setDisplayOptions] = useState({
     stageLayout: "grid",
@@ -29,7 +28,7 @@ export const RoomPage = () => {
   const token = query.get("token");
   const recorder = query.get("recorder");
   const [symblConfig, setSymblConfig] = useState({});
-  const { activeMenu } = useStateContext();
+  const { activeMenu, setActiveMenu } = useStateContext();
 
   if (!url || !token) {
     return <div>url and token are required</div>;
@@ -37,6 +36,7 @@ export const RoomPage = () => {
 
   const onLeave = async () => {
     navigate("/");
+    window.close();
   };
 
   const updateParticipantSize = (room) => {
@@ -64,23 +64,7 @@ export const RoomPage = () => {
 
   return (
     <>
-      {!activeMenu && (
-        <div style={{ width: "100vw", height: "85vh" }}>
-          <RoomContainer
-            updateOptions={updateOptions}
-            displayOptions={displayOptions}
-            numParticipants={numParticipants}
-            query={query}
-            url={url}
-            token={token}
-            onConnected={onConnected}
-            onLeave={onLeave}
-            updateParticipantSize={updateParticipantSize}
-            onParticipantDisconnected={onParticipantDisconnected}
-          />
-        </div>
-      )}
-      {activeMenu && (
+      <div style={{ width: "100vw", height: "90vh" }}>
         <RoomContainer
           updateOptions={updateOptions}
           displayOptions={displayOptions}
@@ -93,7 +77,7 @@ export const RoomPage = () => {
           updateParticipantSize={updateParticipantSize}
           onParticipantDisconnected={onParticipantDisconnected}
         />
-      )}
+      </div>
     </>
   );
 };
@@ -148,9 +132,8 @@ const RoomContainer = ({
   updateParticipantSize,
   onParticipantDisconnected,
 }) => (
-  <div className="roomContainer mx-auto px-4 py-6 max-w-screen-lg">
+  <div className="roomContainer !mx-auto md:mt-12 px-4 py-6 max-w-screen-lg">
     <div className="topBar">
-      <h2>LiveKit Video</h2>
       <div className="right">
         <div>
           <input

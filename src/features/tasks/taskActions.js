@@ -29,6 +29,12 @@ const CREATE_TASK_MUTATION = gql`
       taskCreatorId: $taskCreatorId
       turnedInAt: $turnedInAt
     ) {
+      turnedInAt
+      taskCreatorId
+      projectId
+      assigneeURL {
+        photoURL
+      }
       id
       Title
       Status
@@ -38,8 +44,6 @@ const CREATE_TASK_MUTATION = gql`
       dueDate
       startDate
       taskAssigneeId
-      projectId
-      taskCreatorId
     }
   }
 `;
@@ -81,6 +85,9 @@ const UPDATE_TASK_MUTATION = gql`
       projectId
       taskCreatorId
       turnedInAt
+      assigneeURL {
+        photoURL
+      }
     }
   }
 `;
@@ -146,6 +153,7 @@ export const createTask = createAsyncThunk(
         projectId: createdTask.projectId,
         taskCreatorId: createdTask.taskCreatorId,
         turnedInAt: createdTask.turnedInAt,
+        assigneeURL: createdTask.assigneeURL,
       };
 
       return formattedTask;

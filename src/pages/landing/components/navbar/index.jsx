@@ -37,9 +37,9 @@ export const Navbar = ({
       <img
         src={Logo}
         alt="TasMT Logo"
-        className="w-[180px] h-[55px] mdmt-[-8px]"
+        className="h-[40px] w-[160px] sm:w-[180px] sm:h-[55px] md:mt-[-8px]"
       />
-      <div className="flex gap-4">
+      <div className="flex gap-2 sm:gap-4">
         <motion.button
           type="button"
           variants={buttonVariants}
@@ -50,10 +50,10 @@ export const Navbar = ({
           viewport={{
             once: true,
           }}
-          className="bg-black hover:bg-Hover text-white text-sm font-bold py-2 px-4 h-[2.813rem] w-[6.25rem] rounded-full transition duration-300 ease-in-out"
+          className="bg-black hover:bg-Hover text-white text-xs sm:text-sm font-bold py-2 px-4 h-[2.4rem] w-[5rem] sm:h-[2.813rem] sm:w-[6.25rem] rounded-full transition duration-300 ease-in-out"
           onClick={openSignUpFn}
         >
-          Sign Up
+          Signup
         </motion.button>
         <motion.button
           type="button"
@@ -65,10 +65,10 @@ export const Navbar = ({
           viewport={{
             once: true,
           }}
-          className="bg-black hover:bg-Hover text-white text-sm font-bold py-2 px-4 h-[2.813rem] w-[6.25rem] rounded-full transition duration-300 ease-in-out"
+          className="bg-black hover:bg-Hover text-white text-xs sm:text-sm font-bold py-2 px-4 h-[2.4rem] w-[5rem] sm:h-[2.813rem] sm:w-[6.25rem] rounded-full transition duration-300 ease-in-out"
           onClick={openLoginFn}
         >
-          Log In
+          Login
         </motion.button>
       </div>
       <AnimatePresence initial={false}>

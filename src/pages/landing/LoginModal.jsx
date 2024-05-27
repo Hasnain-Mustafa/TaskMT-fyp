@@ -16,6 +16,8 @@ import {
 } from "../../utils/firebaseConfig";
 import { signInWithPopup } from "firebase/auth";
 import { toast } from "react-toastify";
+import { gql } from "@apollo/client";
+import client from "../../ApolloClient";
 const LoginModal = ({ closeLoginFn }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -32,6 +34,7 @@ const LoginModal = ({ closeLoginFn }) => {
     handleSubmit,
     formState: { errors },
     reset,
+    getValues,
   } = useForm({
     resolver: zodResolver(LoginSchema),
   });
@@ -50,12 +53,33 @@ const LoginModal = ({ closeLoginFn }) => {
         if (result.meta.requestStatus === "rejected") {
           toast.error(result.payload);
         } else if (result.meta.requestStatus === "fulfilled") {
-          console.log(result.payload);
           toast.success(`Happy Tasking, ${result.payload.name}!`);
           closeLoginFn();
         }
       }
     });
+  };
+
+  const handlePasswordReset = async () => {
+    const email = getValues("email");
+    if (email) {
+      try {
+        const { response } = await client.mutate({
+          mutation: gql`
+            mutation RequestPasswordReset($email: String!) {
+              requestPasswordReset(email: $email)
+            }
+          `,
+          variables: { email },
+        });
+        toast.success("Password reset email sent!");
+      } catch (error) {
+        toast.error("Failed to send password reset email.");
+        console.error("Password reset error", error);
+      }
+    } else {
+      toast.error("Please enter your email.");
+    }
   };
 
   const googleLogin = async () => {
@@ -85,17 +109,6 @@ const LoginModal = ({ closeLoginFn }) => {
         userLogin({ email: formData.email, password: formData.password })
       );
       await handleChatEngineLogic(formData);
-      // res.then((result) => {
-      //   if (result && result.meta.requestStatus) {
-      //     if (result.meta.requestStatus === "rejected") {
-      //       toast.error(result.payload);
-      //     } else if (result.meta.requestStatus === "fulfilled") {
-      //       console.log(result.payload);
-      //       toast.success(`Happy Tasking, ${result.payload.name}!`);
-      //       closeLoginFn();
-      //     }
-      //   }
-      // });
     } catch (error) {
       console.error("Error Logging In", error);
     }
@@ -109,12 +122,11 @@ const LoginModal = ({ closeLoginFn }) => {
         first_name: formData.email,
         // Add any additional fields as needed (e.g., first_name, last_name, custom_json)
       };
-      console.log(chatEngineUser);
       const response = await fetch("https://api.chatengine.io/users/", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "PRIVATE-KEY": "93c6a32e-3a67-49f7-b014-3403adb5790b",
+          "PRIVATE-KEY": "21ee82bb-40cc-4093-b1e1-a473a021f4c3",
         },
         body: JSON.stringify(chatEngineUser),
       });
@@ -124,8 +136,6 @@ const LoginModal = ({ closeLoginFn }) => {
       }
 
       const responseData = await response.json();
-
-      console.log(responseData);
     } catch (error) {
       console.error("Error with ChatEngine logic:", error);
     }
@@ -160,7 +170,7 @@ const LoginModal = ({ closeLoginFn }) => {
         >
           <MdCancel size={24} />
         </motion.button>
-        <div className="flex flex-col space-y-1.5 p-6">
+        <div className="flex flex-col space-y-1.5 p-4 sm:p-6">
           <h3 className="font-semibold tracking-tight text-2xl text-center">
             Login
           </h3>
@@ -168,7 +178,7 @@ const LoginModal = ({ closeLoginFn }) => {
             Please enter your credentials or use social login.
           </p>
         </div>
-        <div className="p-6 space-y-4">
+        <div className="p-4 sm:p-6 space-y-2 sm:space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium leading-none">Username</label>
             <input
@@ -215,8 +225,16 @@ const LoginModal = ({ closeLoginFn }) => {
               </span>
             )}
           </div>
+          <button
+            type="button"
+            onClick={handlePasswordReset}
+            className="text-sm text-black hover:text-red-700 "
+          >
+            Forgot password?
+          </button>
         </div>
-        <div className="items-center p-6 flex flex-col space-y-4">
+
+        <div className="items-center p-6 flex flex-col space-y-2 sm:space-y-4">
           <div className="flex flex-col space-y-2">
             <motion.button
               variants={framerButtonVariants}

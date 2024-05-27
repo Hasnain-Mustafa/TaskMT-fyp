@@ -63,6 +63,7 @@ const Calendar = () => {
             selectFromResult: (data) => data,
           }
         );
+
   useEffect(() => {
     const actionPayload =
       userInfo.isManager == "true"
@@ -85,7 +86,6 @@ const Calendar = () => {
             };
           })
         );
-        console.log(tasksWithDetails);
         dispatch(setCalendarData(tasksWithDetails));
       };
 
@@ -116,11 +116,19 @@ const Calendar = () => {
     return data.getMemberById;
   };
 
+  const onPopupOpen = (args) => {
+    // Prevent the editor and quick info popups from opening
+    if (args.type === "Editor" || args.type === "QuickInfo") {
+      args.cancel = true; // Prevent the editor and quick info from opening
+    }
+  };
+
   return (
     <div className="m-2 md:m-10 mt-24 p-2 md:p-10 bg-white rounded-3xl">
       <Header category="App" title="Calendar" />
       <ScheduleComponent
         height="650px"
+        popupOpen={onPopupOpen}
         ref={(schedule) => setScheduleObj(schedule)}
         selectedDate={new Date()}
         eventSettings={{ dataSource: calendarData }}

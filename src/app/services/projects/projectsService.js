@@ -5,7 +5,7 @@ import { gql } from "@apollo/client";
 export const projectsApi = createApi({
   reducerPath: "projectsApi",
   baseQuery: graphqlRequestBaseQuery({
-    url: "http://localhost:3000/graphql",
+    url: "https://taskmt-server.fly.dev/graphql",
     prepareHeaders: (headers, { getState }) => {
       const token = getState().auth?.userToken;
       if (token) {
@@ -32,6 +32,7 @@ export const projectsApi = createApi({
                 email
                 name
                 id
+                photoURL
               }
               creatorId
             }
@@ -56,6 +57,7 @@ export const projectsApi = createApi({
                 id
                 email
                 name
+                photoURL
               }
               creatorId
             }

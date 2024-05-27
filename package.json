@@ -1,6 +1,6 @@
 {
-  "name": "project_syncfusion_dashboard",
-  "version": "0.1.0",
+  "name": "taskmt_dashboard",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.9.5",

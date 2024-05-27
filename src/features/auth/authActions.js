@@ -146,14 +146,7 @@ const UPDATE_GOALS = gql`
 export const updatePicture = createAsyncThunk(
   "auth/updatePicture",
   async ({ email, photoURL }, { rejectWithValue }) => {
-    console.log(email);
     try {
-      // const request = await client.mutate({
-      //   mutation: UPDATE_PICTURE_MUTATION,
-      //   variables: { email, photoURL },
-      // });
-      // const data = request;
-      // console.log(data);
       const request = await client.mutate({
         mutation: UPDATE_PICTURE_MUTATION,
         variables: { email, photoURL },
@@ -219,15 +212,6 @@ export const registerUser = createAsyncThunk(
         variables: { email, name, password, isManager, photoURL },
       });
       const data = request;
-      console.log(data, "test result");
-      //   const [signUpUser, { error }] = useMutation(SIGN_UP_MUTATION);
-      // const response = await client.mutate({
-      //   mutation: SIGN_UP_MUTATION,
-      //   variables: {  email, name, password, isManager},
-      // });
-
-      // Assuming your server returns user data upon successful registration
-      // return response.data.signUpUser;
     } catch (error) {
       // Handle error
       console.error("Registration failed:", error);
@@ -246,6 +230,7 @@ export const userLogin = createAsyncThunk(
       });
       const { data } = request;
       localStorage.setItem("userToken", data.generateUserToken.userToken);
+      setUserInfoInStorage(data.generateUserToken);
       // Assuming your server returns user data and token upon successful login
 
       return data.generateUserToken;

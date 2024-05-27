@@ -12,16 +12,12 @@ import {
   Filter,
 } from "@syncfusion/ej2-react-grids";
 import { CircularProgressbar } from "react-circular-progressbar";
-import avatar2 from "../data/avatar2.jpg";
-
-import "react-circular-progressbar/dist/styles.css"; // Importing styles for progress bar
+import "react-circular-progressbar/dist/styles.css";
 import { useSelector, useDispatch } from "react-redux";
-
 import { Header } from "../components";
 
 import {
   fetchProjectTasks,
-  deleteProject,
   deleteProjects,
 } from "../features/projects/projectActions";
 import {
@@ -32,9 +28,7 @@ import {
 
 const Portfolio = () => {
   const dispatch = useDispatch();
-
   const { userInfo } = useSelector((state) => state.auth);
-
   const [projectsData, setProjectsData] = useState([]);
 
   // Configure selection settings based on user's role
@@ -51,13 +45,13 @@ const Portfolio = () => {
   const toolbarOptions = userInfo.isManager === "true" ? ["Delete"] : [];
   const editing = {
     allowDeleting: userInfo.isManager === "true",
-    allowEditing: true,
+    allowEditing: false,
   };
 
   const [selectedRowsData, setSelectedRowsData] = useState([]);
 
   const { data, isFetching } =
-    userInfo.isManager == "true"
+    userInfo.isManager === "true"
       ? useGetAllProjectsQuery(
           {
             creatorId: userInfo.id,
@@ -78,8 +72,8 @@ const Portfolio = () => {
             selectFromResult: (data) => data,
           }
         );
+
   const handleSelectAll = (args) => {
-    // Assuming args contains all rows or a way to fetch all row data
     const allProjectIds = projectsData.map((project) => project.id); // Extract IDs or relevant data
     setSelectedRowsData(allProjectIds);
   };
@@ -89,17 +83,14 @@ const Portfolio = () => {
   };
 
   const onRowSelected = (args) => {
-    console.log("Selected rows:", args?.data);
     if (Array.isArray(args?.data)) {
-      // When args.data is an array, add all selected IDs
-      const selectedIds = args.data.map((item) => item.id); // Assuming 'id' is the identifier
+      const selectedIds = args.data.map((item) => item.id); // Assuming 'index' is the identifier
       setSelectedRowsData(
         (prevSelectedRowsData) => [
           ...new Set([...prevSelectedRowsData, ...selectedIds]),
         ] // Use Set to avoid duplicates
       );
     } else {
-      // Single item selection (fallback)
       const selectedId = args?.data?.id;
       setSelectedRowsData(
         (prevSelectedRowsData) => [
@@ -110,46 +101,21 @@ const Portfolio = () => {
   };
 
   const onRowDeselected = (args) => {
-    console.log("Deselected rows:", args?.data);
     if (Array.isArray(args?.data)) {
-      // When args.data is an array, remove all deselected IDs
-      const deselectedIds = args.data.map((item) => item.id); // Assuming 'id' is the identifier
+      const deselectedIds = args.data.map((item) => item.index); // Assuming 'index' is the identifier
       setSelectedRowsData((prevSelectedRowsData) =>
         prevSelectedRowsData.filter((id) => !deselectedIds.includes(id))
       );
     } else {
-      // Single item deselection (fallback)
-      const deselectedId = args?.data?.id;
+      const deselectedId = args?.data?.index;
       setSelectedRowsData((prevSelectedRowsData) =>
         prevSelectedRowsData.filter((id) => id !== deselectedId)
       );
     }
   };
 
-  // const handleToolbarClick = (args) => {
-  //   console.log(args);
-
-  //   // Dispatch an action to delete multiple projects
-  //   dispatch(deleteProject({ projectIds: selectedRowsData })); // assuming deleteProject action takes an object with an array of IDs
-  //   console.log(`Deleted projects with IDs: ${selectedRowsData.join(", ")}`);
-  //   setSelectedRowsData([]); // Clear the selection after deleting
-  // };
-
-  // const handleToolbarClick = (args) => {
-  //   console.log(args);
-
-  //   selectedRowsData.forEach((projectId) => {
-  //     dispatch(deleteProject({ projectId })); // Dispatch an action to delete the project
-  //   });
-  //   console.log(`Deleted projects with IDs: ${selectedRowsData.join(", ")}`);
-  //   setSelectedRowsData([]); // Clear the selection after deleting
-  // };
   const handleToolbarClick = (args) => {
-    console.log(args);
-    console.log(selectedRowsData);
-    // Dispatch a single action to delete all selected projects at once
     dispatch(deleteProjects({ projectIds: selectedRowsData }));
-
     setSelectedRowsData([]); // Clear the selection after deleting
   };
 
@@ -165,7 +131,6 @@ const Portfolio = () => {
   };
 
   const renderProgress = (props) => {
-    console.log(props);
     return (
       <div style={{ width: 50 }}>
         <CircularProgressbar
@@ -176,6 +141,7 @@ const Portfolio = () => {
       </div>
     );
   };
+
   const customerGridStatus = (props) => (
     <div className="flex gap-2 justify-center items-center text-gray-700 capitalize">
       <p
@@ -185,72 +151,22 @@ const Portfolio = () => {
       <p>{props.status}</p>
     </div>
   );
-  const customerGridImage = (props) => (
-    <div className="image flex gap-4 items-center">
-      <img className="rounded-full w-10 h-10" src={avatar2} alt="employee" />
-      <div>
-        {props?.assigneeDetails?.map((assignee, index) => (
-          <React.Fragment key={index}>
-            <p>{assignee?.name}</p>
-            <p>{assignee?.email}</p>
-          </React.Fragment>
-        ))}
-      </div>
-    </div>
-  );
 
-  // const customersGrid = [
-  //   { type: "checkbox", width: "50" },
-  //   {
-  //     field: "index",
-  //     headerText: "ID",
-  //     width: "150",
-  //     textAlign: "Center",
-  //     isPrimaryKey: true,
-  //   },
-  //   {
-  //     field: "name",
-  //     headerText: "Name",
-  //     width: "200",
-  //     template: customerGridImage,
-  //     textAlign: "Center",
-  //   },
-  //   {
-  //     field: "title",
-  //     headerText: "Project Name",
-  //     width: "150",
-  //     textAlign: "Center",
-  //   },
-  //   {
-  //     field: "status",
-  //     headerText: "Status",
-  //     width: "130",
-  //     format: "yMd",
-  //     textAlign: "Center",
-  //     template: customerGridStatus,
-  //   },
-  //   {
-  //     field: "weeks",
-  //     headerText: "Weeks",
-  //     width: "100",
-  //     format: "C2",
-  //     textAlign: "Center",
-  //   },
-  //   {
-  //     field: "budget",
-  //     headerText: "Budget",
-  //     width: "100",
-  //     format: "yMd",
-  //     textAlign: "Center",
-  //   },
-  //   {
-  //     field: "Progress",
-  //     headerText: "Progress",
-  //     width: "120",
-  //     template: renderProgress,
-  //     textAlign: "Center",
-  //   },
-  // ];
+  const customerGridImage = (props) => {
+    return (
+      <div className="image flex gap-4 items-center">
+        <img
+          className="rounded-full w-10 h-10"
+          src={props?.assignee?.photoURL}
+          alt="image"
+        />
+        <div>
+          <p>{props?.assignee?.name}</p>
+          <p>{props?.assignee?.email}</p>
+        </div>
+      </div>
+    );
+  };
 
   const baseColumns = [
     {
@@ -300,18 +216,17 @@ const Portfolio = () => {
 
   const customersGrid =
     userInfo.isManager === "true" ? managerColumns : baseColumns;
-  useEffect(() => {
-    console.log(selectedRowsData);
-  }, [selectedRowsData]);
+
   useEffect(() => {
     if (data && !isFetching) {
       const actionPayload =
-        userInfo.isManager == "true"
+        userInfo.isManager === "true"
           ? data?.getAllProjects
           : data?.getAllProjectsAssigned;
+
       const fetchTasksAndUpdateProjects = async () => {
         const updatedProjects = await Promise.all(
-          actionPayload.map(async (project) => {
+          actionPayload.map(async (project, idx) => {
             let status = "Pending"; // Default status
             if (project.assigneeDetails && project.assigneeDetails.length > 0) {
               const tasks = await Promise.all(
@@ -335,36 +250,37 @@ const Portfolio = () => {
                   ? "#ffff00"
                   : "#00ff00";
 
-              // Determine status based on progress
               if (progress === 100) {
                 status = "Completed";
               } else if (progress > 0) {
                 status = "Active";
               }
 
-              return {
+              return project.assigneeDetails.map((assignee, index) => ({
                 ...project,
                 Progress: progress,
                 progressBarColor,
                 status,
-              };
-            } else {
-              return {
-                ...project,
-                Progress: 0,
-                progressBarColor: "#ff0000",
-                status,
-              };
+                index: idx + index + 1, // Add 1 to ensure unique index starting from 1
+                assignee,
+              }));
             }
+            return {
+              ...project,
+              Progress: 0,
+              progressBarColor: "#ff0000", // Default to red for no progress
+              status,
+              index: idx + 1, // Add 1 to use index if no assignees starting from 1
+            };
           })
         );
-
-        setProjectsData(updatedProjects);
+        const flattenedProjects = updatedProjects.flat(); // Flatten the array of arrays
+        setProjectsData(flattenedProjects);
       };
 
       fetchTasksAndUpdateProjects();
     }
-  }, [data, isFetching]);
+  }, [data, isFetching, userInfo]);
 
   return (
     <div className="m-2 md:m-10 mt-24 p-2 md:p-10 bg-white rounded-3xl">

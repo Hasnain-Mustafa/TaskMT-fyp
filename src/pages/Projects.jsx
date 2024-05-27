@@ -8,6 +8,7 @@ import {
   DialogContentText,
   DialogTitle,
   Button,
+  Typography,
 } from "@mui/material";
 
 import { useNavigate } from "react-router-dom";
@@ -25,7 +26,6 @@ import { gql } from "@apollo/client";
 import client from "../ApolloClient";
 import { useStateContext } from "../contexts/ContextProvider";
 import CardComponent from "../components/CardComponent";
-import { Header } from "../components";
 import MonthlyGoalsCard from "../components/MonthlyGoalsCard";
 const Projects = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -113,7 +113,6 @@ const Projects = () => {
     });
   };
   const fetchProject = async (projectId) => {
-    console.log(projectId);
     const { data, error } = await client.query({
       query: gql`
         query GetProjectById($projectId: String!) {
@@ -140,8 +139,8 @@ const Projects = () => {
     return data.getProjectById;
   };
   return (
-    <div className="p-6">
-      {userInfo.isManager === "true" ? (
+    <div className="p-6 lg:ml-16 xl:ml-0">
+      {userInfo.isManager === "true" && (
         <div className="mb-4">
           <Button
             onClick={handleOpenModal}
@@ -159,10 +158,8 @@ const Projects = () => {
             Add Project
           </Button>
         </div>
-      ) : (
-        <div className="mb-4">Assigned Projects</div>
       )}
-      <div className="flex flex-wrap justify-center space-y-4 md:space-y-0 md:space-x-4 p-5">
+      <div className="flex flex-wrap justify-center lg:justify-start space-y-4 md:space-y-0 md:space-x-4 p-5">
         <div className="mb-8">
           <CardComponent />
         </div>
@@ -170,17 +167,40 @@ const Projects = () => {
           <MonthlyGoalsCard />
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        {projects.map((project) => (
-          <ProjectCard
-            key={project.id}
-            project={project}
-            onViewDetails={onViewDetails}
-            onDelete={() => openConfirmDialog(project.id)}
-            onEdit={() => handleEditProject(project.id)}
-          />
-        ))}
+      <div className="mb-4 ml-5 text-2xl font-bold">Projects</div>
+      <div>
+        {projects && projects.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            {projects.map((project) => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                onViewDetails={onViewDetails}
+                onDelete={() => openConfirmDialog(project.id)}
+                onEdit={() => handleEditProject(project.id)}
+              />
+            ))}
+          </div>
+        ) : (
+          <Typography
+            variant="h6"
+            style={{
+              textAlign: "center",
+              marginTop: "40px",
+              color: "#4a4a4a",
+              fontSize: "18px",
+              fontWeight: "500",
+              padding: "20px",
+              backgroundColor: "#f9f9f9",
+              borderRadius: "8px",
+              boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            No projects yet!
+          </Typography>
+        )}
       </div>
+
       <AnimatePresence initial={false}>
         {openModal && (
           <CreateProjectsModal
@@ -198,34 +218,51 @@ const Projects = () => {
           "& .MuiDialog-paper": {
             width: "auto", // Automatically adjust width to content
             maxWidth: "360px", // Maintain a manageable maximum width
-            backgroundColor: currentColor, // Use dynamic color from context
-            color: "#fff", // White text for general content
+            backgroundColor: "#fff", // Use dynamic color from context
+            color: currentColor, // White text for general content
             borderRadius: "8px", // Rounded corners
           },
         }}
       >
-        <DialogTitle id="alert-dialog-title" sx={{ color: "#fff" }}>
+        <DialogTitle id="alert-dialog-title" sx={{ color: "#111" }}>
           {"Confirm Deletion"}
         </DialogTitle>
         <DialogContent>
           <DialogContentText
             id="alert-dialog-description"
-            sx={{ color: "#fff" }}
+            sx={{ color: "#111" }}
           >
             Are you sure you want to delete this project? This action cannot be
             undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeConfirmDialog} sx={{ color: "#fff" }}>
+          <Button
+            className="rounded-full"
+            onClick={closeConfirmDialog}
+            component={motion.div}
+            {...framerButtonVariants}
+            sx={{
+              color: currentColor,
+              backgroundColor: "#fff",
+              border: "1px solid black",
+              borderRadius: "9999px",
+            }}
+          >
             Cancel
           </Button>
 
           <Button
             onClick={handleDeleteProject}
             autoFocus
+            component={motion.div}
+            {...framerButtonVariants}
             className="bg-red-500 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
-            style={{ color: "#ef4444" }} // Force the text color inline
+            style={{
+              color: "#ef4444",
+              borderRadius: "9999px",
+              border: "1px solid red",
+            }} // Force the text color inline
           >
             Delete
           </Button>

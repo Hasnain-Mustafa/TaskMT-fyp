@@ -7,7 +7,7 @@ import {
 import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
 
-const httpLink = new HttpLink({ uri: "http://localhost:3000/graphql" });
+const httpLink = new HttpLink({ uri: "https://taskmt-server.fly.dev/graphql" });
 
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem("token");

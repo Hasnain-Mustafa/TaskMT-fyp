@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { gql, useQuery } from "@apollo/client"; // Import useQuery
 import Typography from "@mui/material/Typography";
 import LottieAnimation from "../components/LottieAnimation";
 import { debounce } from "lodash";
@@ -12,34 +11,29 @@ import {
 } from "@syncfusion/ej2-react-kanban";
 import { Header } from "../components";
 import { useSelector, useDispatch } from "react-redux";
-import { kanbanGrid } from "../data/dummy";
 import CreateTaskModal from "./CreateTaskModal";
 import Avatar from "@mui/material/Avatar";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import avatar from "../data/avatar.jpg";
 import { useStateContext } from "../contexts/ContextProvider";
-import { reset, updateTasks } from "../features/tasks/taskSlice";
+import { updateTasks } from "../features/tasks/taskSlice";
 import { getCurrentFormattedTime } from "../utils/utils";
 import SimpleModal from "../components/SimpleModal";
-import {
-  updateTask,
-  deleteTask,
-  getTasks,
-} from "../features/tasks/taskActions";
+import { updateTask, deleteTask } from "../features/tasks/taskActions";
 import {
   useGetAssignedTasksQuery,
   useGetCreatedTasksQuery,
 } from "../app/services/tasks/tasksService";
-import { Snackbar, Button } from "@mui/material";
 import { pushNotifications } from "../features/auth/authActions";
 import taskComplete from "../data/taskComplete.json";
+
 const getStatusColor = (status) => {
   switch (status) {
     case "Open":
       return "red";
     case "InProgress":
       return "pink";
-    case "Testing":
+    case "Review":
       return "yellow";
     case "Close":
       return "green";
@@ -47,6 +41,21 @@ const getStatusColor = (status) => {
       return "black";
   }
 };
+
+const kanbanGrid = [
+  { headerText: "To Do", keyField: "Open" },
+
+  { headerText: "In Progress", keyField: "InProgress" },
+  {
+    headerText: "Review",
+    keyField: "Review",
+    isExpanded: false,
+  },
+  {
+    headerText: "Done",
+    keyField: "Close",
+  },
+];
 
 const getPriorityColor = (priority) => {
   switch (priority) {
@@ -131,46 +140,38 @@ const Kanban = () => {
   );
 
   const onActionBegin = (args) => {
-    console.log("Action Begin Event: ", args);
-
-    // Assuming userInfo is defined somewhere in this scope
     const changedTask = args.changedRecords[0];
 
     if (userInfo.isManager !== "true" && changedTask.Status === "Close") {
       toast.error("Only project managers can set the status to 'Close'");
-      args.cancel = true; // This prevents the save operation
-      return; // Stop further processing
+      args.cancel = true;
+      return;
     } else {
     }
 
-    // This block will handle cases where the task status is set to 'Testing' by non-managers
     if (
       args.requestType === "cardChange" &&
-      changedTask.Status === "Testing" &&
+      changedTask.Status === "Review" &&
       userInfo.isManager !== "true"
     ) {
       if (changedTask) {
         const updatedTask = {
           ...changedTask,
           status: changedTask.Status,
-          taskId: changedTask.id, // Assuming 'id' is the correct property name
+          taskId: changedTask.id,
           title: changedTask.Title,
           summary: changedTask.Summary,
           turnedInAt: new Date().toISOString().slice(0, 19),
         };
-        console.log(changedTask);
         debouncedUpdateTask(updatedTask);
         setShowModal(true);
-        // Matches the 0.75s duration of the animation
-        // Hide after 3 seconds
-        // Correct usage of dispatch with an async thunk action creator
         dispatch(
           pushNotifications({
-            userId: changedTask.taskCreatorId, // Assuming this is correctly obtaining the ID of the task creator
+            userId: changedTask.taskCreatorId,
             notification: [
               {
-                image: avatar, // Ensure this is the correct path or variable for the image
-                message: `${userInfo.name} submitted for review`, // Correct string interpolation
+                image: avatar,
+                message: `${userInfo.name} submitted for review`,
                 desc: "Assign new tasks",
                 time: getCurrentFormattedTime(),
               },
@@ -179,12 +180,11 @@ const Kanban = () => {
         );
       }
     } else {
-      // This is the default block for updating tasks that do not meet specific conditions above
-      if (changedTask && changedTask.Status === "Testing") {
+      if (changedTask && changedTask.Status === "Review") {
         const updatedTask = {
           ...changedTask,
           status: changedTask.Status,
-          taskId: changedTask.id, // Accessing id property safely
+          taskId: changedTask.id,
           title: changedTask.Title,
           summary: changedTask.Summary,
           turnedInAt: new Date().toISOString().slice(0, 19),
@@ -196,7 +196,7 @@ const Kanban = () => {
           const updatedTask = {
             ...changedTask,
             status: changedTask.Status,
-            taskId: changedTask.id, // Accessing id property safely
+            taskId: changedTask.id,
             title: changedTask.Title,
             summary: changedTask.Summary,
             turnedInAt: "",
@@ -207,6 +207,7 @@ const Kanban = () => {
       }
     }
   };
+
   const onDialogOpen = (args) => {
     if (userInfo.isManager !== "true") {
       args.cancel = true;
@@ -214,7 +215,6 @@ const Kanban = () => {
   };
 
   const onDragStart = (event) => {
-    // Accessing the dragged card data
     if (userInfo.isManager !== "true" && event.data[0].Status == "Close") {
       event.cancel = true;
       toast.error(
@@ -223,23 +223,15 @@ const Kanban = () => {
       return;
     }
   };
-  // const onDialogOpen = (args) => {
-  //   console.log("Dialog is opening:", args); // Log or manipulate the dialog opening event
-  //   if (userInfo.isManager != "true" && args.data.Status === "Close") {
-  //     args.cancel = true; // Prevent editing if status is "Close" and user is not a manager
-  //     toast.error("Only project manager can edit tasks marked as complete");
-  //   }
-  // };
-  const onActionComplete = (args) => {
-    console.log(args);
 
+  const onActionComplete = (args) => {
     if (args.requestType === "cardChanged" && name === "actionComplete") {
       const changedTask = args?.changedRecords[0];
       if (changedTask) {
         const updatedTask = {
           ...changedTask,
           status: changedTask.Status,
-          taskId: changedTask.id, // Accessing id property safely
+          taskId: changedTask.id,
           title: changedTask.Title,
           summary: changedTask.Summary,
         };
@@ -256,41 +248,36 @@ const Kanban = () => {
     ) {
       const deletedTask = args.deletedRecords[0];
 
-      // Check if the deletedTask exists and has an id
       if (deletedTask && deletedTask.id) {
         const targetColumnKey = deletedTask.Status;
 
         args.cancel = true;
-        // Show the popup
         toast.error("Only project manager can delete the task");
 
-        // Create a new task object with the updated status
         const updatedTask = {
           ...deletedTask,
           taskId: deletedTask.id,
           status: targetColumnKey,
         };
 
-        // Dispatch the action to update the task
         dispatch(updateTask(updatedTask));
       }
     } else {
       const deletedTask = args?.deletedRecords[0];
 
-      // Check if the deletedTask exists and has an id
       if (deletedTask && deletedTask.id) {
-        // Dispatch the action to delete the task
         dispatch(deleteTask({ taskId: deletedTask.id }));
       }
     }
   };
+
   const cardTemplate = (data) => {
     const isManager = userInfo.isManager === "true";
     const isClosed = data.Status === "Close";
 
     const cardStyle = {
-      pointerEvents: !isManager && isClosed ? "none" : "auto", // Disabling pointer events for non-managers on 'Close' status
-      opacity: !isManager && isClosed ? 0.6 : 1, // Dimming the card to indicate it's disabled
+      pointerEvents: !isManager && isClosed ? "none" : "auto",
+      opacity: !isManager && isClosed ? 0.6 : 1,
     };
 
     return (
@@ -311,7 +298,7 @@ const Kanban = () => {
               marginRight: "8px",
             }}
           >
-            {data.Priority}
+            {data.priority}
           </Typography>
           <ColoredCircle color={getStatusColor(data.Status)} />
           <Typography
@@ -329,7 +316,7 @@ const Kanban = () => {
           >
             <img
               className="rounded-full h-8 w-8"
-              src={avatar}
+              src={data.assigneeURL.photoURL}
               alt="user-profile"
             />
             <div>
@@ -380,53 +367,61 @@ const Kanban = () => {
   ];
 
   return (
-    <div className="m-2 md:m-10 mt-24 p-2 md:p-10 rounded-3xl">
+    <div className="m-2 lg:m-10 mt-24 p-2 lg:p-10 rounded-3xl">
       <Header title="Tasks" />
-      {/* <Snackbar
-        open={showPopup}
-        autoHideDuration={6000}
-        onClose={togglePopup}
-        message="Only project manager can mark this task as complete"
-        action={
-          <Button color="primary" size="small" onClick={togglePopup}>
-            Close
-          </Button>
-        }
-      /> */}
-      <CreateTaskModal />
-      {tasks && tasks.length > 0 && (
-        <KanbanComponent
-          id="kanban"
-          keyField="Status"
-          dataSource={tasks?.map((task, index) => ({
-            ...task,
-            index: index,
-          }))}
-          dragStart={onDragStart}
-          cardSettings={{
-            contentField: "Summary",
-            headerField: "index",
-            template: cardTemplate,
-          }}
-          actionComplete={onActionComplete}
-          dialogSettings={{ fields: fields }}
-          allowDragging={true}
-          actionBegin={onActionBegin}
-          dialogOpen={onDialogOpen}
-          style={{ marginTop: "20px" }}
-        >
-          <ColumnsDirective>
-            {kanbanGrid.map((item, index) => (
-              <ColumnDirective key={index} {...item} />
-            ))}
-          </ColumnsDirective>
-        </KanbanComponent>
-      )}
-      <SimpleModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-      ></SimpleModal>
-      <LottieAnimation animationPath={taskComplete} isVisible={showModal} />
+      <div className="kanban-wrapper">
+        <CreateTaskModal />
+        {tasks && tasks.length > 0 ? (
+          <div className="kanban-container">
+            <KanbanComponent
+              id="kanban"
+              keyField="Status"
+              dataSource={tasks?.map((task, index) => ({
+                ...task,
+                index: index,
+              }))}
+              dragStart={onDragStart}
+              cardSettings={{
+                contentField: "Summary",
+                headerField: "index",
+                template: cardTemplate,
+              }}
+              actionComplete={onActionComplete}
+              dialogSettings={{ fields: fields }}
+              allowDragging={true}
+              actionBegin={onActionBegin}
+              dialogOpen={onDialogOpen}
+              style={{ marginTop: "20px" }}
+            >
+              <ColumnsDirective>
+                {kanbanGrid.map((item, index) => (
+                  <ColumnDirective key={index} {...item} />
+                ))}
+              </ColumnsDirective>
+            </KanbanComponent>
+          </div>
+        ) : (
+          <Typography
+            variant="h6"
+            style={{
+              textAlign: "center",
+              marginTop: "40px",
+              color: "#4a4a4a",
+              fontSize: "18px",
+              fontWeight: "500",
+              padding: "20px",
+              backgroundColor: "#f9f9f9",
+              borderRadius: "8px",
+              boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            The board is clean!
+          </Typography>
+        )}
+        <SimpleModal isOpen={showModal} onClose={() => setShowModal(false)}>
+          <LottieAnimation animationPath={taskComplete} isVisible={showModal} />
+        </SimpleModal>
+      </div>
     </div>
   );
 };

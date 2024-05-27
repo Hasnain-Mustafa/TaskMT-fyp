@@ -1,25 +1,94 @@
-// export default CreateTaskModal;
 import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import Button from "@mui/material/Button";
 import Drawer from "@mui/material/Drawer";
 import Typography from "@mui/material/Typography";
-import { TextField, Select, MenuItem, Box, Grid } from "@mui/material";
+import {
+  TextField,
+  Select,
+  MenuItem,
+  Box,
+  Grid,
+  InputLabel,
+  FormControl,
+} from "@mui/material";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { format } from "date-fns";
-import { useSelector, useDispatch } from "react-redux";
-import { createTask } from "../features/tasks/taskActions";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { framerButtonVariants } from "../components/framer";
 import { useStateContext } from "../contexts/ContextProvider";
+import { createTask } from "../features/tasks/taskActions";
+import useMediaQuery from "@mui/material/useMediaQuery";
+
+// Modify the CustomInput to accept label as props
+const CustomInput = React.forwardRef(
+  (
+    { onClick, value, currentColor, placeholder, label, onFocus, onBlur },
+    ref
+  ) => (
+    <FormControl
+      variant="outlined"
+      fullWidth
+      sx={{
+        "& .MuiOutlinedInput-root": {
+          "& fieldset": { borderColor: currentColor },
+          "&:hover fieldset": { borderColor: currentColor },
+          "&.Mui-focused fieldset": { borderColor: currentColor },
+        },
+        "& .MuiInputLabel-root": {
+          color: currentColor,
+          "&.Mui-focused": {
+            color: currentColor,
+          },
+        },
+      }}
+    >
+      <InputLabel
+        shrink={value ? true : undefined}
+        htmlFor="datepicker-input"
+        sx={{
+          color: currentColor,
+          "&.Mui-focused": {
+            color: currentColor,
+          },
+        }}
+      >
+        {label}
+      </InputLabel>
+      <TextField
+        id="datepicker-input"
+        onClick={onClick}
+        value={value}
+        ref={ref}
+        placeholder={placeholder}
+        label={label}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        InputLabelProps={{
+          shrink: true,
+        }}
+        InputProps={{
+          style: {
+            borderColor: currentColor,
+          },
+        }}
+        fullWidth
+      />
+    </FormControl>
+  )
+);
+
 const CreateTaskModal = () => {
   const { currentColor } = useStateContext();
   const [open, setOpen] = useState(false);
-  const { userInfo } = useSelector((state) => state.auth);
+  const userInfo = useSelector((state) => state.auth.userInfo);
   const dispatch = useDispatch();
   const { projectId } = useParams();
+  const isMobile = useMediaQuery("(max-width:600px)");
+  const isTablet = useMediaQuery("(max-width:900px)");
   const [newTask, setNewTask] = useState({
     title: "",
     status: "Open",
@@ -28,33 +97,22 @@ const CreateTaskModal = () => {
     priority: "High",
     taskAssigneeEmail: "",
     dueDate: null,
-    startDate: new Date(), // Start date in local timezone
+    startDate: new Date(),
     projectId: projectId,
     taskCreatorId: userInfo.id,
     turnedInAt: "",
   });
+  const [isDatePickerFocused, setIsDatePickerFocused] = useState(false);
 
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const handleInputChange = (field) => (event) => {
-    const value = event.target.value;
-    setNewTask((prevState) => ({
-      ...prevState,
-      [field]: value,
-    }));
+    setNewTask({ ...newTask, [field]: event.target.value });
   };
 
   const handleDateChange = (date) => {
-    setNewTask({
-      ...newTask,
-      dueDate: date,
-    });
+    setNewTask({ ...newTask, dueDate: date });
   };
 
   const handleCreateTask = () => {
@@ -64,23 +122,40 @@ const CreateTaskModal = () => {
         ? format(newTask.dueDate, "yyyy-MM-dd'T'HH:mm:ss'Z'")
         : null,
     };
-
-    const taskData = dispatch(createTask(formattedTask));
-    taskData.then((result) => {
-      if (result && result.meta.requestStatus) {
-        if (result.meta.requestStatus === "rejected") {
-          toast.error(result.payload);
-        } else if (result.meta.requestStatus === "fulfilled") {
-          toast.success("Task Created");
-          handleClose();
-        }
+    dispatch(createTask(formattedTask)).then((result) => {
+      if (result.meta.requestStatus === "fulfilled") {
+        toast.success("Task Created");
+        handleClose();
+      } else {
+        toast.error(result.payload);
       }
     });
   };
 
+  const fields = [
+    { label: "Title", id: "title" },
+    { label: "Summary", id: "summary" },
+    { label: "Assignee Email", id: "taskAssigneeEmail" },
+    {
+      label: "Status",
+      id: "status",
+      options: ["Open", "InProgress", "Review", "Close"],
+    },
+    {
+      label: "Type",
+      id: "type",
+      options: ["Bug", "Feature", "Enhancement"],
+    },
+    {
+      label: "Priority",
+      id: "priority",
+      options: ["High", "Medium", "Low"],
+    },
+  ];
+
   return (
     <div>
-      {userInfo.isManager === "true" && (
+      {userInfo.isManager && (
         <Button
           onClick={handleOpen}
           component={motion.div}
@@ -97,127 +172,98 @@ const CreateTaskModal = () => {
           New Task
         </Button>
       )}
-      <Drawer anchor="right" open={open} onClose={handleClose}>
-        <Box p={2} width={800}>
+      <Drawer
+        anchor="right"
+        open={open}
+        onClose={handleClose}
+        PaperProps={{
+          sx: {
+            width: isMobile ? "100%" : isTablet ? "63%" : "70%",
+            height: isMobile ? "calc(100% - 64px)" : "100vh", // Adjust height to account for margin
+            marginTop: isMobile && "64px", // Add top margin
+            overflow: "auto", // Enable scrolling
+          },
+        }}
+      >
+        <Box p={2}>
           <Typography variant="h6">Create New Task</Typography>
           <Grid container spacing={3}>
-            {[
-              { label: "Title", id: "title" },
-              { label: "Summary", id: "summary" },
-              { label: "Assignee", id: "taskAssigneeEmail" },
-            ].map((field) => (
-              <Grid item xs={12} sm={4} key={field.id}>
-                <TextField
-                  id={field.id}
-                  variant="outlined"
-                  label={field.label}
-                  fullWidth
-                  value={newTask[field.id]}
-                  onChange={handleInputChange(field.id)}
-                />
+            {fields.map((field) => (
+              <Grid item xs={12} sm={6} key={field.id}>
+                {field.options ? (
+                  <FormControl
+                    fullWidth
+                    variant="outlined"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        "& fieldset": { borderColor: currentColor },
+                        "&:hover fieldset": { borderColor: currentColor },
+                        "&.Mui-focused fieldset": { borderColor: currentColor },
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: currentColor,
+                        "&.Mui-focused": {
+                          color: currentColor,
+                        },
+                      },
+                    }}
+                  >
+                    <InputLabel id={field.id}>{field.label}</InputLabel>
+                    <Select
+                      labelId={field.id}
+                      label={field.label}
+                      value={newTask[field.id]}
+                      onChange={handleInputChange(field.id)}
+                    >
+                      {field.options.map((option) => (
+                        <MenuItem key={option} value={option}>
+                          {option}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                ) : (
+                  <TextField
+                    label={field.label}
+                    variant="outlined"
+                    fullWidth
+                    value={newTask[field.id]}
+                    onChange={handleInputChange(field.id)}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        "& fieldset": { borderColor: currentColor },
+                        "&:hover fieldset": { borderColor: currentColor },
+                        "&.Mui-focused fieldset": { borderColor: currentColor },
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: currentColor,
+                        "&.Mui-focused": {
+                          color: currentColor,
+                        },
+                      },
+                    }}
+                  />
+                )}
               </Grid>
             ))}
-            <Grid item xs={12} sm={4}>
-              <Select
-                id="Status"
-                variant="outlined"
-                label="Status"
-                value={newTask.status}
-                onChange={handleInputChange("status")}
-                fullWidth
-                sx={{
-                  "& .MuiInputLabel-root": {
-                    color: "black", // Change label color to black
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    "& fieldset": {
-                      borderColor: "black", // Change outline color to black
-                    },
-                    "&:focused ": {
-                      borderColor: "black", // Change outline color to black on hover
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "black", // Change outline color to black on focus
-                    },
-                  },
-                }}
-              >
-                <MenuItem value="Open">Open</MenuItem>
-                <MenuItem value="InProgress">InProgress</MenuItem>
-                <MenuItem value="Testing">Testing</MenuItem>
-                <MenuItem value="Close">Close</MenuItem>
-              </Select>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Select
-                id="type"
-                variant="outlined"
-                label="Type"
-                value={newTask.type}
-                onChange={handleInputChange("type")}
-                fullWidth
-                sx={{
-                  "& .MuiInputLabel-root": {
-                    color: "black", // Change label color to black
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    "& fieldset": {
-                      borderColor: "black", // Change outline color to black
-                    },
-                    "&:focused ": {
-                      borderColor: "black", // Change outline color to black on hover
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "black", // Change outline color to black on focus
-                    },
-                  },
-                }}
-              >
-                <MenuItem value="Bug">Bug</MenuItem>
-                <MenuItem value="Feature">Feature</MenuItem>
-                <MenuItem value="Enhancement">Enhancement</MenuItem>
-              </Select>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Select
-                id="priority"
-                variant="outlined"
-                label="Priority"
-                value={newTask.priority}
-                onChange={handleInputChange("priority")}
-                fullWidth
-                sx={{
-                  "& .MuiInputLabel-root": {
-                    color: "black", // Change label color to black
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    "& fieldset": {
-                      borderColor: "black", // Change outline color to black
-                    },
-                    "&:focused ": {
-                      borderColor: "black", // Change outline color to black on hover
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "black", // Change outline color to black on focus
-                    },
-                  },
-                }}
-              >
-                <MenuItem value="High">High</MenuItem>
-                <MenuItem value="Medium">Medium</MenuItem>
-                <MenuItem value="Low">Low</MenuItem>
-              </Select>
-            </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={6}>
               <DatePicker
-                id="dueDate"
                 selected={newTask.dueDate}
                 onChange={handleDateChange}
                 showTimeSelect
                 timeFormat="HH:mm"
                 timeIntervals={15}
                 dateFormat="MMMM d, yyyy h:mm aa"
-                className="form-control"
+                minDate={new Date()}
+                customInput={
+                  <CustomInput
+                    currentColor={currentColor}
+                    placeholder="Select due date"
+                    label="Due Date"
+                    onFocus={() => setIsDatePickerFocused(true)}
+                    onBlur={() => setIsDatePickerFocused(false)}
+                  />
+                }
               />
             </Grid>
           </Grid>

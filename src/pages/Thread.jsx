@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import avatar from "../data/avatar.jpg";
 import { getCurrentFormattedTime } from "../utils/utils";
 import { ChatEngine } from "react-chat-engine";
 import { gql } from "@apollo/client";
@@ -8,24 +7,21 @@ import client from "../ApolloClient";
 import { chatNotifications } from "../features/auth/authActions";
 const Thread = () => {
   const { userInfo } = useSelector((state) => state.auth);
-  console.log(userInfo);
   const dispatch = useDispatch();
 
   const pushNotification = async (chatId, message) => {
-    console.log(message);
     const chatMembersUrl = `https://api.chatengine.io/chats/${chatId}/people/`;
     try {
       const response = await fetch(chatMembersUrl, {
         method: "GET",
         headers: {
-          "Project-ID": "431543cd-73a5-419c-966f-c902b35319ad",
+          "Project-ID": "814c164f-2d76-40df-8c21-342a264f025e",
           "User-Name": userInfo.name,
           "User-Secret": userInfo.name,
         },
       });
       const data = await response.json();
       const emails = data?.map((person) => person.person.first_name); // assuming email is stored as first_name
-      console.log(emails); // Assuming the response has a `members` key
       const userIds = [];
 
       for (const email of emails) {
@@ -33,14 +29,13 @@ const Thread = () => {
         const userId = await fetchUserIdByEmail(email);
         if (userId) userIds.push(userId);
       }
-      console.log(userIds);
       // Dispatching notification for each user
       userIds.forEach((id) => {
         dispatch(
           chatNotifications({
             chat: {
               userId: id,
-              image: avatar, // Ensure 'avatar' is defined or imported
+              image: userInfo.photoURL, // Ensure 'avatar' is defined or imported
               message: "New message received",
               sender: message.sender.first_name,
               desc: `${message.sender_username} sent you a new message!`,
@@ -78,7 +73,7 @@ const Thread = () => {
   return (
     <div>
       <ChatEngine
-        projectID="431543cd-73a5-419c-966f-c902b35319ad"
+        projectID="814c164f-2d76-40df-8c21-342a264f025e"
         userName={userInfo.name}
         userSecret={userInfo.name}
         onNewMessage={(chatId, message) => pushNotification(chatId, message)}

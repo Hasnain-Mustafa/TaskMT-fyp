@@ -97,7 +97,6 @@ export const createProject = createAsyncThunk(
       });
 
       const { data } = request;
-      console.log(data.createProject);
       return data.createProject;
     } catch (error) {
       // Handle error
@@ -111,7 +110,6 @@ export const updateProject = createAsyncThunk(
   "projects/updateProject",
   async ({ projectId, title, summary, weeks, budget }, { rejectWithValue }) => {
     try {
-      console.log(projectId, title, summary, weeks, budget);
       const request = await client.mutate({
         mutation: UPDATE_PROJECT_MUTATION,
         variables: {
@@ -145,7 +143,6 @@ export const deleteProject = createAsyncThunk(
       });
 
       const { data } = request;
-      console.log(data, "test result");
       return data.deleteProject;
     } catch (error) {
       // Handle error
@@ -165,7 +162,6 @@ export const deleteProjects = createAsyncThunk(
       });
 
       const { data } = request;
-      console.log(data, "test result");
       return data.deleteProjects.ids; // Ensure this matches the data returned by your GraphQL server
     } catch (error) {
       console.error("Projects Deletion Failed:", error);
@@ -196,7 +192,7 @@ export const fetchProjectTasks = async (projectId, taskAssigneeId) => {
   `;
 
   try {
-    const response = await fetch("http://localhost:3000/graphql", {
+    const response = await fetch("https://taskmt-server.fly.dev/graphql", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

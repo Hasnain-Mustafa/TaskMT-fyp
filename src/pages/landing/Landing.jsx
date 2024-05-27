@@ -1,13 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Navbar } from "./components";
 import { Hero, Pricing, Showcase, Footer, CountUp } from "./sections";
 import { MotionConfig } from "framer-motion";
+import ResetPasswordModal from "../ResetPassword";
 import CommunityIcon from "./icon-communities.svg";
 import MessagesIcon from "./icon-messages.svg";
 
 const Landing = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
+  const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
+  const { token } = useParams();
+  const location = useLocation();
 
   const openLogin = () => {
     setIsLoginOpen(true);
@@ -24,6 +29,16 @@ const Landing = () => {
   const closeSignUp = () => {
     setIsSignUpOpen(false);
   };
+
+  useEffect(() => {
+    if (location.pathname.includes("/reset-password/") && token) {
+      setIsResetPasswordOpen(true);
+    }
+  }, [location, token]);
+  const closeResetPassword = () => {
+    setIsResetPasswordOpen(false);
+  };
+
   return (
     <div className="landing-page">
       <MotionConfig reducedMotion="user">
@@ -56,6 +71,12 @@ const Landing = () => {
           />
         </div>
         <Footer />
+        {isResetPasswordOpen && (
+          <ResetPasswordModal
+            closeResetPasswordFn={closeResetPassword}
+            token={token}
+          />
+        )}
       </MotionConfig>
     </div>
   );

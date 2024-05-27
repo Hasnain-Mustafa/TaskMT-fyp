@@ -4,7 +4,6 @@ import CardContent from "@mui/material/CardContent";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import product1 from "../data/product1.jpg";
 import { useSelector } from "react-redux";
 import { useStateContext } from "../contexts/ContextProvider";
 import { motion } from "framer-motion";
@@ -51,20 +50,8 @@ const ProjectCard = ({ project, onViewDetails, onDelete, onEdit }) => {
           </>
         )}
         <CardContent>
-          <h3 className="text-lg font-semibold mb-4">{project.title}</h3>
+          <h3 className="text-lg font-semibold mb-4 mt-5">{project.title}</h3>
           <p className="text-sm text-gray-500 mb-4">{project.summary}</p>
-          {/* Uncomment and adjust the image section as needed */}
-          {/* <img
-          alt="Project Image"
-          className="w-full h-32 object-cover mb-2"
-          height="200"
-          src={product1}
-          style={{
-            aspectRatio: "200/200",
-            objectFit: "cover",
-          }}
-          width="200"
-        /> */}
           <Button
             onClick={() => onViewDetails(project.id)}
             type="button"

@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { MdOutlineCancel } from "react-icons/md";
 import { Button } from ".";
-import { chatData } from "../data/dummy";
 import { useStateContext } from "../contexts/ContextProvider";
 import { useNavigate } from "react-router-dom"; // Import useNavigate hook
 import { useSelector, useDispatch } from "react-redux";
@@ -10,6 +9,7 @@ import { setChats } from "../features/auth/authSlice";
 import { useGetChatsQuery } from "../app/services/auth/authService";
 import { motion } from "framer-motion";
 import { framerNavbarCards, mobileFramerNavbarCards } from "./framer";
+
 const Chat = ({ screenWidth }) => {
   const { currentColor, setIsClicked } = useStateContext();
   const navigate = useNavigate(); // useNavigate hook for navigation
@@ -18,7 +18,6 @@ const Chat = ({ screenWidth }) => {
   const dispatch = useDispatch();
   const handleSeeAllMessages = () => {
     // Redirect to /thread route
-    console.log("here");
     navigate("/thread");
   };
 
@@ -40,7 +39,6 @@ const Chat = ({ screenWidth }) => {
 
   useEffect(() => {
     if (data) {
-      console.log(data);
       const filteredChats = data.getChats.filter(
         (chat) => chat.sender !== userInfo.email
       );
@@ -78,11 +76,15 @@ const Chat = ({ screenWidth }) => {
             className="flex items-center gap-5 border-b border-color p-3 leading-8 cursor-pointer"
           >
             <div className="relative">
-              <img
-                className="rounded-full h-10 w-10"
-                src={item.image}
-                alt={item.message}
-              />
+              {userInfo.photoURL !== "" ? (
+                <img
+                  className="rounded-full h-10 w-10"
+                  src={item.image}
+                  alt={item.message}
+                />
+              ) : (
+                <FaUser className="rounded-full w-10 h-10" />
+              )}
               <span
                 style={{ background: item.dotColor }}
                 className="absolute inline-flex rounded-full h-2 w-2 right-0 -top-1"

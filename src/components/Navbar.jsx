@@ -1,15 +1,14 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { AiOutlineMenu, AiOutlineArrowLeft } from "react-icons/ai";
 
-import { BsChatLeft, BsCameraVideo } from "react-icons/bs";
+import { BsChatLeft } from "react-icons/bs";
 import { RiNotification3Line } from "react-icons/ri";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { TooltipComponent } from "@syncfusion/ej2-react-popups";
 import { useStateContext } from "../contexts/ContextProvider";
 import { Chat, Notification, UserProfile } from ".";
-import avatar from "../data/avatar.jpg";
-import { MdOutlineMissedVideoCall } from "react-icons/md";
-import { useNavigate } from "react-router-dom"; // Import the useNavigate hook
+import { IoIosVideocam } from "react-icons/io";
+import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import NotificationBadge from "react-notification-badge";
 import { Effect } from "react-notification-badge";
@@ -30,7 +29,6 @@ const NavButton = ({
   customFunc,
   icon,
   color,
-  dotColor,
   chats,
   showBadge,
   notifications,
@@ -44,28 +42,18 @@ const NavButton = ({
       style={{ color }}
       className="relative text-xl rounded-full p-3 hover:bg-light-gray"
     >
-      {console.log(notifications)}
-      {
-        notifications && showDot ? (
-          <NotificationBadge
-            count={notifications?.length}
-            effect={Effect.SCALE}
-          />
-        ) : (
-          chats &&
-          showBadge && (
-            <NotificationBadge count={chats?.length} effect={Effect.SCALE} />
-          )
-        ) // : (
-        //   <span
-        //     style={{ background: dotColor }}
-        //     className="absolute inline-flex rounded-full h-2 w-2 right-2 top-2"
-        //   />
-        // )
-        // Render nothing if neither chats nor notifications are present
-      }
-
-      {icon}
+      {notifications && showDot ? (
+        <NotificationBadge
+          count={notifications?.length}
+          effect={Effect.SCALE}
+        />
+      ) : (
+        chats &&
+        showBadge && (
+          <NotificationBadge count={chats?.length} effect={Effect.SCALE} />
+        )
+      )}
+      <span className="text-2xl">{icon}</span> {/* Changed icon size */}
     </motion.button>
   </TooltipComponent>
 );
@@ -82,7 +70,6 @@ const Navbar = (props) => {
   } = useStateContext();
   const { isThreadPage } = props;
   const { userInfo } = useSelector((state) => state.auth);
-  const prevUserInfoRef = useRef();
   const { chats, showBadge, notifications, showDot } = useSelector(
     (state) => state.auth
   );
@@ -98,7 +85,7 @@ const Navbar = (props) => {
   }, []);
 
   useEffect(() => {
-    setActiveMenu(screenSize > 900);
+    setActiveMenu(screenSize >= 800);
   }, [screenSize]);
 
   useEffect(() => {
@@ -155,7 +142,6 @@ const Navbar = (props) => {
   }, [notificationData, dispatch]);
   useEffect(() => {
     if (data) {
-      console.log(data);
       const filteredChats = data.getChats.filter(
         (chat) => chat.sender !== userInfo.email
       );
@@ -164,7 +150,7 @@ const Navbar = (props) => {
     }
   }, [data, dispatch, userInfo.email]);
   return (
-    <div className="flex justify-between sm:mb-8 md:justify-end p-2 md:ml-2 md:mr-6 relative">
+    <div className="flex justify-between lg:justify-end p-2 md:ml-2 md:mr-6 relative">
       {displayBackButton ? (
         <NavButton
           title="Back"
@@ -173,7 +159,7 @@ const Navbar = (props) => {
           icon={<AiOutlineArrowLeft />}
         />
       ) : (
-        screenSize <= 900 && (
+        screenSize < 800 && (
           <NavButton
             title="Menu"
             customFunc={handleActiveMenu}
@@ -188,7 +174,7 @@ const Navbar = (props) => {
           title="Video-Call"
           customFunc={handleVideoClick}
           color={currentColor}
-          icon={<MdOutlineMissedVideoCall />}
+          icon={<IoIosVideocam />}
         />
 
         <NavButton

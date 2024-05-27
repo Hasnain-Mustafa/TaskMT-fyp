@@ -70,7 +70,6 @@ const CreateProjectsModal = ({
     }
   }, [initialData, setValue]);
   const handleAddProject = async (data) => {
-    console.log(data);
     const action = initialData ? updateProject : createProject;
     try {
       const result = initialData

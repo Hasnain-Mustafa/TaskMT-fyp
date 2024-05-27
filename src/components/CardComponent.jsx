@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -29,7 +29,6 @@ const CardComponent = () => {
         userInfo.isManager == "true"
           ? projectsData.getAllProjects
           : projectsData.getAllProjectsAssigned;
-      console.log(actionPayload);
       const fetchTasksAndUpdateProjects = async () => {
         let totalTasksCompleted = 0;
         let projectsInProgress = 0;
@@ -98,7 +97,7 @@ const CardComponent = () => {
   ];
 
   return (
-    <div className="bg-gray-700 p-4 rounded-xl max-w-xs h-88 text-gray-300 shadow-xl">
+    <div className="bg-black p-4 rounded-xl max-w-xs text-gray-300 shadow-xl">
       <div className="flex justify-between items-center mb-3">
         <h1 className="text-sm font-medium text-white">Overall Information</h1>
         <div className="flex items-center">

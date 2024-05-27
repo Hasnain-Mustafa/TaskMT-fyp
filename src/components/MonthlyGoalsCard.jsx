@@ -5,14 +5,17 @@ import {
   AiOutlineEdit,
   AiOutlineClose,
 } from "react-icons/ai";
+import Button from "./Button";
 import {
   deleteGoals,
   addGoals,
   updateGoals,
 } from "../features/auth/authActions";
-import { MdOutlineCheckBoxOutlineBlank } from "react-icons/md";
+import { MdOutlineCancel, MdOutlineCheckBoxOutlineBlank } from "react-icons/md";
 import { setGoals } from "../features/auth/authSlice";
 import { useGetGoalsQuery } from "../app/services/auth/authService";
+import { motion } from "framer-motion";
+import { framerButtonVariants } from "./framer";
 
 const MonthlyGoalsCard = () => {
   const dispatch = useDispatch();
@@ -98,10 +101,13 @@ const MonthlyGoalsCard = () => {
   }, [isEditing]);
 
   return (
-    <div className="bg-white p-5 rounded-xl shadow-md w-64 relative">
+    <div className="bg-black p-5 rounded-xl shadow-md w-[20rem] h-[13rem] relative">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-bold">Monthly goals:</h2>
-        <AiOutlineEdit className="ml-2 cursor-pointer" onClick={toggleModal} />
+        <h2 className="text-lg font-bold text-white">Monthly Goals:</h2>
+        <AiOutlineEdit
+          className="ml-2 cursor-pointer text-white"
+          onClick={toggleModal}
+        />
       </div>
       <div
         style={{ maxHeight: "139px", overflowY: "scroll", paddingTop: "10px" }}
@@ -113,11 +119,11 @@ const MonthlyGoalsCard = () => {
                 {goal.isCompleted ? (
                   <AiFillCheckSquare className="text-lg text-red-500" />
                 ) : (
-                  <MdOutlineCheckBoxOutlineBlank className="text-lg" />
+                  <MdOutlineCheckBoxOutlineBlank className="text-lg text-white" />
                 )}
               </div>
               <span
-                className={`ml-2 text-black ${
+                className={`ml-2 text-white ${
                   goal.isCompleted ? "line-through" : ""
                 }`}
                 style={{ flexGrow: 1 }}
@@ -134,14 +140,24 @@ const MonthlyGoalsCard = () => {
         ))}
       </div>
       {isEditing && (
-        <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 rounded-xl flex items-center justify-center p-4">
           <div
             className="bg-white p-4 rounded-lg shadow-lg max-w-xs w-full"
             ref={modalRef}
           >
-            <h3 className="text-lg font-semibold mb-4">
-              {currentGoal?.id ? "Edit Goal" : "Add New Goal"}
-            </h3>
+            <div className="flex items-center mb-4 justify-between">
+              <h3 className="text-lg font-semibold">
+                {currentGoal?.id ? "Edit Goal" : "Add New Goal"}
+              </h3>
+              <Button
+                icon={<MdOutlineCancel />}
+                color="rgb(153, 171, 180)"
+                bgHoverColor="light-gray"
+                size="2xl"
+                borderRadius="50%"
+                onClick={toggleModal}
+              />
+            </div>
             <input
               type="text"
               value={currentGoal ? currentGoal.text : ""}
@@ -152,12 +168,13 @@ const MonthlyGoalsCard = () => {
               placeholder="Enter goal"
             />
 
-            <button
-              className="bg-black hover:bg-gray-900 text-white font-bold py-2 px-4 rounded w-full"
+            <motion.button
+              {...framerButtonVariants}
+              className="bg-black hover:bg-gray-900 text-white font-bold py-2 px-4 rounded-full w-full"
               onClick={handleAddGoal}
             >
               Save
-            </button>
+            </motion.button>
           </div>
         </div>
       )}

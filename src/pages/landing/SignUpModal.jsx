@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MdCancel } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Backdrop from "../../components/Backdrop";
 import { motion } from "framer-motion";
@@ -101,7 +100,6 @@ const SignUpModal = ({ closeSignUpFn }) => {
       reset();
       const result = await signInWithPopup(auth, githubProvider);
       const { email, displayName, photoURL } = result.user;
-      console.log(result.user);
       OAuthSignup(email, displayName, photoURL);
       closeSignUpFn();
       // Redirect after successful sign-up
@@ -192,7 +190,7 @@ const SignUpModal = ({ closeSignUpFn }) => {
         >
           <MdCancel size={24} />
         </motion.button>
-        <div className="flex flex-col space-y-1.5 p-4">
+        <div className="flex flex-col space-y-1.5 p-2 sm:p-4">
           <h3 className="font-semibold tracking-tight text-2xl text-center">
             Sign Up
           </h3>
@@ -200,7 +198,7 @@ const SignUpModal = ({ closeSignUpFn }) => {
             Please enter your information to create an account.
           </p>
         </div>
-        <div className="p-4 space-y-2">
+        <div className="p-2 sm:p-4 space-y-2">
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium leading-none">
               Email

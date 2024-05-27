@@ -3,7 +3,7 @@ import { data } from "./data";
 
 export const Pricing = () => {
   return (
-    <section className=" p-[70px] m-auto my-[10rem] space-y-10 md:space-y-20 bg-midnight">
+    <section className=" p-[1rem] md:p-[70px] m-auto my-[10rem] space-y-10 md:space-y-20 bg-midnight">
       <div className="space-y-8 text-center md:max-w-[32.563rem] m-auto">
         <h2 className="text-3xl font-bold text-white">
           Explore our powerful features

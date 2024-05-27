@@ -1,197 +1,210 @@
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap");
 
-body{
-    margin: 0;
-    padding:0;
-    font-family: "Open Sans", sans-serif;
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Open Sans", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 body {
-    padding: 0;
-    font-family: Avenir, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  padding: 0;
+  font-family: Avenir, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
- 
-
-  }
-  
-  code {
-    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-  }
-  
-  a {
-    color: #5a8bff;
-  }
-  
-  a:hover {
-    opacity: 0.8;
-  }
-  
-  .container {
-    box-sizing: border-box;
-    height: 100vh;
-    padding: 32px;
-  }
-   
-  .prejoin {
-    display: grid;
-    align-items: center;
-    justify-items: center;
-  }
-  
-  .prejoin main {
-    width: 750px;
-  }
-  
-  .prejoin h2 {
-    text-align: center;
-    margin-top: 30px;
-  }
-  
-  .prejoin hr {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  .prejoin footer {
-    font-size: 14px;
-    margin-top: 50px;
-    margin-bottom: 40px;
-  }
-  
-  .entrySection {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    margin-top: 40px;
-    gap: 0.8rem;
-  }
-  
-  @media only screen and (max-width: 800px) {
-    .container {
-      padding: 8px;
-    }
-  
-    .entrySection {
-      grid-template-columns: 1fr;
-      margin-top: 20px;
-      gap: 20px;
-    }
-  
-    .prejoin main {
-      width: 100%;
-    }
-  }
-  
-  
-  .entrySection .label {
-    font-weight: 900;
-    font-size: 16px;
-    margin-bottom: 10px;
-  }
-  
-  .entrySection input {
-    border: 1px solid;
-    border-radius: 4px;
-    font-size: 16px;
-    background-color: transparent;
-    color: rgb(17, 16, 16);
-    padding: 8px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-  .entrySection input[type="text"] {
-    width: calc(100% - 16px);
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+a {
+  color: #5a8bff;
+}
+
+a:hover {
+  opacity: 0.8;
+}
+
+.container {
+  box-sizing: border-box;
+  height: 100vh;
+  padding: 32px;
+}
+
+.prejoin {
+  display: grid;
+  align-items: center;
+  justify-items: center;
+}
+
+.prejoin main {
+  width: 750px;
+}
+
+.prejoin h2 {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.prejoin hr {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.prejoin footer {
+  font-size: 14px;
+  margin-top: 50px;
+  margin-bottom: 40px;
+}
+
+.entrySection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 40px;
+  gap: 0.8rem;
+}
+
+@media only screen and (max-width: 767px) {
+  .container {
+    padding: 8px;
   }
-  
-  .entrySection div {
-    vertical-align: middle;
-  }
-  
-  .videoSection {
-    width: 100%;
-    aspect-ratio: 16 / 9;
+
+  .entrySection {
+    grid-template-columns: 1fr;
     margin-top: 20px;
+    gap: 20px;
   }
-  
-  .videoSection video {
+
+  .prejoin main {
     width: 100%;
-    height: 100%;
-    border-radius: 4px;
   }
-  
-  .videoSection .placeholder {
-    width: 100%;
-    height: 100%;
-    border-radius: 4px;
-    background: #2F2F2F;
+
+  ._2kKks {
+    flex-wrap: wrap;
   }
-  
-  .controlSection {
-    margin-top: 30px;
-    display: grid;
-    grid-template-columns: auto auto minmax(100px, min-content);
-  }
-  
-  .controlSection .right {
-    grid-column: 3 / 4;
-  }
-  
-  .roomContainer {
-    height: calc(100vh - 100px);
-  }
-  
-  .topBar {
-    display: grid;
-    grid-template-columns: auto auto;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .topBar .right {
-    display: grid;
-    grid-template-columns: auto auto auto;
-    align-items: center;
-    gap: 16px;
-  }
-  
-  .iconButton {
-    cursor: pointer;
-  }
-  
-  .iconButton:disabled {
-    cursor: auto;
-  }
-  
-  .participantCount {
-    font-size: 14px;
-  }
-  
-  .participantCount span {
-    display: inline-block;
-    margin-left: 5px;
-  }
-  
-  .options {
-    display: grid;
-    grid-template-columns: repeat(2, fit-content(120px)) auto;
-    gap: 8px;
-  }
-  
-  .options label {
-    text-align: center;
-    margin-left: 0.2rem;
-    font-size: 0.9rem;
-  }
-  /* @keyframes completionAnimation {
+}
+
+.entrySection .label {
+  font-weight: 900;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.entrySection input {
+  border: 1px solid;
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: transparent;
+  color: rgb(17, 16, 16);
+  padding: 8px;
+}
+
+.entrySection input[type="text"] {
+  width: calc(100% - 16px);
+}
+
+.entrySection div {
+  vertical-align: middle;
+}
+
+.videoSection {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin-top: 20px;
+}
+
+.videoSection video {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+}
+
+.videoSection .placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  background: #2f2f2f;
+}
+
+/* .controlSection {
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: auto auto minmax(100px, min-content);
+}
+
+.controlSection .right {
+  grid-column: 3 / 4;
+} */
+
+.roomContainer {
+  height: calc(100vh - 100px);
+}
+
+._2kKks {
+  display: flex;
+  /* flex-wrap: wrap; */
+}
+
+._2kKks > :last-child {
+  flex-basis: 100%;
+}
+
+.topBar {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.topBar .right {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  align-items: center;
+  gap: 16px;
+}
+
+.iconButton {
+  cursor: pointer;
+}
+
+.iconButton:disabled {
+  cursor: auto;
+}
+
+.participantCount {
+  font-size: 14px;
+}
+
+.participantCount span {
+  display: inline-block;
+  margin-left: 5px;
+}
+
+.options {
+  display: grid;
+  grid-template-columns: repeat(2, fit-content(120px)) auto;
+  gap: 8px;
+}
+
+.options label {
+  text-align: center;
+  margin-left: 0.2rem;
+  font-size: 0.9rem;
+}
+/* @keyframes completionAnimation {
     from { opacity: 1; }
     to { opacity: 0; }
   }
   
   .complete-animation {
     animation: completionAnimation 2s ease forwards; /* Adjust duration as needed */
-  /* } */
-  
+/* } */

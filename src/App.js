@@ -56,6 +56,7 @@ const App = () => {
       <Nav />
       <div className={currentMode === "Dark" ? "dark" : ""}>
         <Routes>
+          <Route path="/reset-password/:token" element={<Landing />} />
           <Route
             path="/*"
             element={

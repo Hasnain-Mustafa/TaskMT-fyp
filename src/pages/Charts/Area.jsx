@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   ChartComponent,
   SeriesCollectionDirective,
@@ -30,6 +30,7 @@ const Area = () => {
     userInfo.isManager == "true"
       ? useGetAllProjectsQuery({ creatorId: userInfo.id })
       : useGetAllProjectsAssignedQuery({ assigneeId: userInfo.id });
+
   const tooltipRender = (args) => {
     // Ensures that the Y value is included in the tooltip content
     // Check that args.point and args.series are defined and have the correct properties
@@ -47,6 +48,7 @@ const Area = () => {
       args.text = "Data not available";
     }
   };
+
   const fetchMemberName = async (memberId) => {
     const { data, error } = await client.query({
       query: gql`
@@ -70,22 +72,16 @@ const Area = () => {
   };
 
   useEffect(() => {
-    console.log("Running useEffect with projects data:", projectsData);
-
     if (projectsData && !isFetching) {
-      console.log("Processing data for chart...");
       const actionPayload =
         userInfo.isManager === "true"
           ? projectsData.getAllProjects
           : projectsData.getAllProjectsAssigned;
 
-      console.log("Action Payload:", actionPayload);
-
       const processData = async () => {
         const lastSevenDays = Array.from({ length: 7 }, (_, i) =>
           moment().subtract(i, "days").format("YYYY-MM-DD")
         ).reverse();
-        console.log("Last seven days:", lastSevenDays);
 
         try {
           const membersData = await Promise.all(
@@ -94,7 +90,6 @@ const Area = () => {
                 project.assigneeDetails &&
                 project.assigneeDetails.length > 0
               ) {
-                console.log(`Fetching tasks for project ${project.title}`);
                 return await Promise.all(
                   project.assigneeDetails.map(async (assignee) => {
                     const tasks = await fetchProjectTasks(
@@ -145,7 +140,6 @@ const Area = () => {
             width: "2",
           }));
 
-          console.log("Prepared chart data:", chartData);
           dispatch(setAreaChartData(chartData));
         } catch (error) {
           console.error("Error processing project tasks:", error);
@@ -154,7 +148,7 @@ const Area = () => {
 
       processData();
     }
-  }, [projectsData, isFetching]);
+  }, [projectsData, isFetching, dispatch, userInfo.isManager]);
 
   return (
     <div className="m-4 md:m-10 mt-24 p-10 bg-white dark:bg-secondary-dark-bg rounded-3xl">
@@ -162,44 +156,51 @@ const Area = () => {
         category="Area"
         title="Task Turn-In By Assignee Over Last 7 Days"
       />
-      <div className="w-full">
-        <ChartComponent
-          id="area-chart"
-          primaryXAxis={{
-            valueType: "DateTime",
-            labelFormat: "dd/MMM",
-            intervalType: "Days",
-            edgeLabelPlacement: "Shift",
-            labelStyle: { color: "gray" },
+      <div className="w-full lg:w-[40rem] xl:w-full overflow-x-auto whitespace-nowrap">
+        <div
+          style={{
+            minWidth: "1024px",
+            display: "inline-block",
           }}
-          primaryYAxis={{
-            labelFormat: "{value}",
-            title: "Completed Tasks",
-            lineStyle: { width: 0 },
-            maximum:
-              Math.max(
-                ...areaChartData.map((series) =>
-                  Math.max(...series.dataSource.map((data) => data.y))
-                )
-              ) + 1,
-            interval: 1,
-            majorTickLines: { width: 0 },
-            minorTickLines: { width: 0 },
-            labelStyle: { color: "gray" },
-          }}
-          chartArea={{ border: { width: 0 } }}
-          background="white"
-          tooltip={{ enable: true, shared: true }}
-          tooltipRender={tooltipRender}
-          legendSettings={{ background: "white" }}
         >
-          <Inject services={[SplineAreaSeries, DateTime, Legend, Tooltip]} />
-          <SeriesCollectionDirective>
-            {areaChartData.map((item, index) => (
-              <SeriesDirective key={index} {...item} />
-            ))}
-          </SeriesCollectionDirective>
-        </ChartComponent>
+          <ChartComponent
+            id="area-chart"
+            primaryXAxis={{
+              valueType: "DateTime",
+              labelFormat: "dd/MMM",
+              intervalType: "Days",
+              edgeLabelPlacement: "Shift",
+              labelStyle: { color: "gray" },
+            }}
+            primaryYAxis={{
+              labelFormat: "{value}",
+              title: "Completed Tasks",
+              lineStyle: { width: 0 },
+              maximum:
+                Math.max(
+                  ...areaChartData.map((series) =>
+                    Math.max(...series.dataSource.map((data) => data.y))
+                  )
+                ) + 1,
+              interval: 1,
+              majorTickLines: { width: 0 },
+              minorTickLines: { width: 0 },
+              labelStyle: { color: "gray" },
+            }}
+            chartArea={{ border: { width: 0 } }}
+            background="white"
+            tooltip={{ enable: true, shared: true }}
+            tooltipRender={tooltipRender}
+            legendSettings={{ background: "white" }}
+          >
+            <Inject services={[SplineAreaSeries, DateTime, Legend, Tooltip]} />
+            <SeriesCollectionDirective>
+              {areaChartData.map((item, index) => (
+                <SeriesDirective key={index} {...item} />
+              ))}
+            </SeriesCollectionDirective>
+          </ChartComponent>
+        </div>
       </div>
     </div>
   );
