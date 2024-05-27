@@ -1,24 +1,23 @@
-import express from 'express';
-import createApolloGraphqlServer from './graphql/index';
-import { expressMiddleware } from '@apollo/server/express4';
-import bodyParser from 'body-parser';
-import cors from 'cors';
-import { decodeJWTToken } from './services/userService';
-import { startCronJobs } from './services/cronJob';
+import express from "express";
+import createApolloGraphqlServer from "./graphql/index";
+import { expressMiddleware } from "@apollo/server/express4";
+import bodyParser from "body-parser";
+import cors from "cors";
+import { decodeJWTToken } from "./services/userService";
+import { startCronJobs } from "./services/cronJob";
 const PORT = Number(process.env.PORT) || 3000;
 
 async function startServer() {
   const app = express();
- 
+
   app.use(bodyParser.json());
   app.use(cors());
 
   app.use(
-    '/graphql',
-   
+    "/graphql",
     expressMiddleware(await createApolloGraphqlServer(), {
       context: async ({ req }) => {
-        const token = req.headers['authorization'];
+        const token = req.headers["authorization"];
         try {
           if (token) {
             const user = decodeJWTToken(token);
@@ -32,6 +31,8 @@ async function startServer() {
     })
   );
   startCronJobs();
-  app.listen(PORT, () => console.log(`Server running on port ${PORT} `));
+  app.listen(PORT, "0.0.0.0", () =>
+    console.log(`Server running on port ${PORT} `)
+  );
 }
 startServer();

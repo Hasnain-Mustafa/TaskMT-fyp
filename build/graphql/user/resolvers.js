@@ -17,7 +17,6 @@ const queries = {
         if (context && context.user) {
             const id = context.user.id;
             const user = yield (0, userService_1.getUserById)(id);
-            console.log(user);
             return user;
         }
     }),
@@ -25,60 +24,55 @@ const queries = {
         try {
             // Call your data source/service to fetch the user by ID
             const userNotifications = yield (0, userService_1.getNotifications)({ userId });
-            console.log(userNotifications);
             return userNotifications;
         }
         catch (error) {
             // Handle errors
-            throw new Error('Failed to fetch user notifications');
+            throw new Error("Failed to fetch user notifications");
         }
     }),
     getChats: (_, { userId }) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             // Call your data source/service to fetch the user by ID
             const userChats = yield (0, userService_1.getChats)({ userId });
-            console.log(userChats);
             return userChats;
         }
         catch (error) {
             // Handle errors
-            throw new Error('Failed to fetch user chats');
+            throw new Error("Failed to fetch user chats");
         }
     }),
     getUserByEmail: (_, { email }) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             // Call your data source/service to fetch the user by ID
             const user = yield (0, userService_1.getUserByEmail)(email);
-            console.log(user);
             return user;
         }
         catch (error) {
             // Handle errors
-            throw new Error('Failed to fetch user ');
+            throw new Error("Failed to fetch user ");
         }
     }),
     getGoals: (_, { userId }) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             // Call your data source/service to fetch the user by ID
             const userGoals = yield (0, userService_1.getGoals)({ userId });
-            console.log(userGoals);
             return userGoals;
         }
         catch (error) {
             // Handle errors
-            throw new Error('Failed to fetch user goals');
+            throw new Error("Failed to fetch user goals");
         }
     }),
     getMemberById: (_, { userId }) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             // Call your data source/service to fetch the user by ID
             const user = yield (0, userService_1.getMemberById)({ userId });
-            console.log(user);
             return user;
         }
         catch (error) {
             // Handle errors
-            throw new Error('Failed to fetch user');
+            throw new Error("Failed to fetch user");
         }
     }),
 };
@@ -89,7 +83,7 @@ const mutations = {
             return res.id;
         }
         else {
-            throw new Error('Failed to create project');
+            throw new Error("Failed to create project");
         }
     }),
     generateUserToken: (_, payload) => __awaiter(void 0, void 0, void 0, function* () {
@@ -107,7 +101,8 @@ const mutations = {
     addGoals: (_, payload) => __awaiter(void 0, void 0, void 0, function* () {
         const result = yield (0, userService_1.addGoals)(payload);
         return result;
-    }), signUpWithOAuth: (_, payload) => __awaiter(void 0, void 0, void 0, function* () {
+    }),
+    signUpWithOAuth: (_, payload) => __awaiter(void 0, void 0, void 0, function* () {
         const res = yield (0, userService_1.signUpWithOAuth)(payload);
         if (res) {
             return res.id;
@@ -146,9 +141,17 @@ const mutations = {
             return { success: false, message: "Failed to subscribe." };
         }
     }),
+    requestPasswordReset: (_, { email }) => __awaiter(void 0, void 0, void 0, function* () {
+        const result = yield (0, userService_1.requestPasswordReset)({ email });
+        return result;
+    }),
+    resetPassword: (_, payload) => __awaiter(void 0, void 0, void 0, function* () {
+        const result = yield (0, userService_1.resetPassword)(payload);
+        return result;
+    }),
     deleteGoals: userService_1.deleteGoals,
     updateGoals: userService_1.updateGoals,
     deleteChats: userService_1.deleteChats,
-    deleteNotifications: userService_1.deleteNotifications
+    deleteNotifications: userService_1.deleteNotifications,
 };
 exports.resolvers = { queries, mutations };

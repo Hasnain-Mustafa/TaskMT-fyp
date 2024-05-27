@@ -26,7 +26,6 @@ const getCurrentFormattedTime = () => {
     });
 };
 const sendNotificationToUser = (userId, title, message, description) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(`Notify ${userId} about task: ${title}`);
     const notification = {
         image: "", // Provide a valid URL or a path to an image
         message: `Task ${title} ${message} `,
@@ -35,20 +34,19 @@ const sendNotificationToUser = (userId, title, message, description) => __awaite
     };
     const payload = {
         userId: userId,
-        notification: [notification]
+        notification: [notification],
     };
     try {
         yield (0, userService_1.addNotifications)(payload);
-        console.log(`Notification sent to user ${userId} about task ${title}`);
     }
     catch (error) {
-        console.error('Error sending notification:', error);
+        console.error("Error sending notification:", error);
     }
 });
 const startCronJobs = () => {
     // Notify users when tasks are past due
-    node_cron_1.default.schedule('0 0 * * *', () => __awaiter(void 0, void 0, void 0, function* () {
-        console.log('Checking for overdue tasks every 30 seconds');
+    node_cron_1.default.schedule("0 0 * * *", () => __awaiter(void 0, void 0, void 0, function* () {
+        console.log("Checking for overdue tasks every 30 seconds");
         const overdueTasks = yield prisma.task.findMany({
             where: {
                 dueDate: {
@@ -62,7 +60,7 @@ const startCronJobs = () => {
                 taskAssignee: true,
             },
         });
-        overdueTasks.forEach(task => {
+        overdueTasks.forEach((task) => {
             if (task.taskAssigneeId) {
                 sendNotificationToUser(task.taskAssigneeId, task.title, "is past due", "Please update or complete the task as soon as possible.").catch(console.error);
             }
@@ -70,12 +68,12 @@ const startCronJobs = () => {
     }));
     // */120 * * * * *
     // Schedule a job to run every Monday at 9:00 AM (you can adjust the timing as needed)
-    node_cron_1.default.schedule('0 9 * * 1', () => __awaiter(void 0, void 0, void 0, function* () {
-        console.log('Running a task every Monday at 9:00 AM');
+    node_cron_1.default.schedule("*/5 * * * *", () => __awaiter(void 0, void 0, void 0, function* () {
+        console.log("Running a task every 5 minutes");
         try {
             const subscribers = yield prisma.subscriber.findMany();
-            subscribers.forEach(subscriber => {
-                (0, emailTransporter_1.sendNewsletterEmail)(subscriber.email, 'Weekly Newsletter', `Welcome to this week's edition of the TaskMT Digest! Every week, we bring you the best tips, insights, and updates to help you and your team achieve peak productivity.
+            subscribers.forEach((subscriber) => {
+                (0, emailTransporter_1.sendNewsletterEmail)(subscriber.email, "Weekly Newsletter", `Welcome to this week's edition of the TaskMT Digest! Every week, we bring you the best tips, insights, and updates to help you and your team achieve peak productivity.
           
           Feature Spotlight: Interactive Task Board
           
@@ -109,12 +107,12 @@ const startCronJobs = () => {
             });
         }
         catch (error) {
-            console.error('Failed to retrieve subscribers or send emails:', error);
+            console.error("Failed to retrieve subscribers or send emails:", error);
         }
     }));
     // Notify users when tasks are due tomorrow
-    node_cron_1.default.schedule(' 0 0 * * *', () => __awaiter(void 0, void 0, void 0, function* () {
-        console.log('Checking for tasks due tomorrow');
+    node_cron_1.default.schedule(" 0 0 * * *", () => __awaiter(void 0, void 0, void 0, function* () {
+        console.log("Checking for tasks due tomorrow");
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         const startOfDay = new Date(tomorrow.setHours(0, 0, 0, 0));
@@ -133,7 +131,7 @@ const startCronJobs = () => {
                 taskAssignee: true,
             },
         });
-        dueTomorrowTasks.forEach(task => {
+        dueTomorrowTasks.forEach((task) => {
             if (task.taskAssigneeId) {
                 sendNotificationToUser(task.taskAssigneeId, task.title, "is due tomorrow", "Let’s nail it!").catch(console.error);
             }

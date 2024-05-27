@@ -19,15 +19,15 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const cors_1 = __importDefault(require("cors"));
 const userService_1 = require("./services/userService");
 const cronJob_1 = require("./services/cronJob");
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORT) || 5000;
 function startServer() {
     return __awaiter(this, void 0, void 0, function* () {
         const app = (0, express_1.default)();
         app.use(body_parser_1.default.json());
         app.use((0, cors_1.default)());
-        app.use('/graphql', (0, express4_1.expressMiddleware)(yield (0, index_1.default)(), {
+        app.use("/graphql", (0, express4_1.expressMiddleware)(yield (0, index_1.default)(), {
             context: ({ req }) => __awaiter(this, void 0, void 0, function* () {
-                const token = req.headers['authorization'];
+                const token = req.headers["authorization"];
                 try {
                     if (token) {
                         const user = (0, userService_1.decodeJWTToken)(token);
@@ -41,7 +41,7 @@ function startServer() {
             }),
         }));
         (0, cronJob_1.startCronJobs)();
-        app.listen(PORT, () => console.log(`Server running on port ${PORT} `));
+        app.listen(PORT, "0.0.0.0", () => console.log(`Server running on port ${PORT} `));
     });
 }
 startServer();

@@ -1,7 +1,7 @@
-import { PrismaClient } from '@prisma/client';
-import cron from 'node-cron';
-import { addNotifications, NotificationPayload } from './userService';  // Ensure path is correct
-import { sendNewsletterEmail } from './emailTransporter';
+import { PrismaClient } from "@prisma/client";
+import cron from "node-cron";
+import { addNotifications, NotificationPayload } from "./userService"; // Ensure path is correct
+import { sendNewsletterEmail } from "./emailTransporter";
 const prisma = new PrismaClient();
 
 const getCurrentFormattedTime = (): string => {
@@ -12,64 +12,72 @@ const getCurrentFormattedTime = (): string => {
   });
 };
 
-const sendNotificationToUser = async (userId: string, title: string,message:string, description: string): Promise<void> => {
-    console.log(`Notify ${userId} about task: ${title}`);
-    const notification = {
-        image: "", // Provide a valid URL or a path to an image
-        message: `Task ${title} ${message} `,
-        desc: description,
-        time: getCurrentFormattedTime(),
-    };
+const sendNotificationToUser = async (
+  userId: string,
+  title: string,
+  message: string,
+  description: string
+): Promise<void> => {
+  const notification = {
+    image: "", // Provide a valid URL or a path to an image
+    message: `Task ${title} ${message} `,
+    desc: description,
+    time: getCurrentFormattedTime(),
+  };
 
-    const payload: NotificationPayload = {
-        userId: userId,
-        notification: [notification]
-    };
+  const payload: NotificationPayload = {
+    userId: userId,
+    notification: [notification],
+  };
 
-    try {
-        await addNotifications(payload);
-        console.log(`Notification sent to user ${userId} about task ${title}`);
-    } catch (error) {
-        console.error('Error sending notification:', error);
-    }
+  try {
+    await addNotifications(payload);
+  } catch (error) {
+    console.error("Error sending notification:", error);
+  }
 };
 
 export const startCronJobs = (): void => {
-    // Notify users when tasks are past due
-    cron.schedule('0 0 * * *', async () => {
-        console.log('Checking for overdue tasks every 30 seconds');
-        const overdueTasks = await prisma.task.findMany({
-            where: {
-                dueDate: {
-                    lt: new Date().toISOString(),
-                },
-                status: {
-                    not: "Close",
-                },
-            },
-            include: {
-                taskAssignee: true,
-            },
-        });
-
-        overdueTasks.forEach(task => {
-            if (task.taskAssigneeId) {
-                sendNotificationToUser(task.taskAssigneeId, task.title, "is past due","Please update or complete the task as soon as possible.").catch(console.error);
-            }
-        });
+  // Notify users when tasks are past due
+  cron.schedule("0 0 * * *", async () => {
+    console.log("Checking for overdue tasks every 30 seconds");
+    const overdueTasks = await prisma.task.findMany({
+      where: {
+        dueDate: {
+          lt: new Date().toISOString(),
+        },
+        status: {
+          not: "Close",
+        },
+      },
+      include: {
+        taskAssignee: true,
+      },
     });
-    // */120 * * * * *
-   // Schedule a job to run every Monday at 9:00 AM (you can adjust the timing as needed)
-cron.schedule('0 9 * * 1', async () => {
-    console.log('Running a task every Monday at 9:00 AM');
-  
+
+    overdueTasks.forEach((task) => {
+      if (task.taskAssigneeId) {
+        sendNotificationToUser(
+          task.taskAssigneeId,
+          task.title,
+          "is past due",
+          "Please update or complete the task as soon as possible."
+        ).catch(console.error);
+      }
+    });
+  });
+  // */120 * * * * *
+  // Schedule a job to run every Monday at 9:00 AM (you can adjust the timing as needed)
+  cron.schedule("*/5 * * * *", async () => {
+    console.log("Running a task every 5 minutes");
+
     try {
       const subscribers = await prisma.subscriber.findMany();
-      subscribers.forEach(subscriber => {
+      subscribers.forEach((subscriber) => {
         sendNewsletterEmail(
-            subscriber.email,
-            'Weekly Newsletter',
-            `Welcome to this week's edition of the TaskMT Digest! Every week, we bring you the best tips, insights, and updates to help you and your team achieve peak productivity.
+          subscriber.email,
+          "Weekly Newsletter",
+          `Welcome to this week's edition of the TaskMT Digest! Every week, we bring you the best tips, insights, and updates to help you and your team achieve peak productivity.
           
           Feature Spotlight: Interactive Task Board
           
@@ -100,40 +108,44 @@ cron.schedule('0 9 * * 1', async () => {
           Warm regards,
           
           The TaskMT Team`
-          );
-          
+        );
       });
     } catch (error) {
-      console.error('Failed to retrieve subscribers or send emails:', error);
+      console.error("Failed to retrieve subscribers or send emails:", error);
     }
   });
-    // Notify users when tasks are due tomorrow
-    cron.schedule(' 0 0 * * *', async () => {
-        console.log('Checking for tasks due tomorrow');
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const startOfDay = new Date(tomorrow.setHours(0, 0, 0, 0));
-        const endOfDay = new Date(tomorrow.setHours(23, 59, 59, 999));
+  // Notify users when tasks are due tomorrow
+  cron.schedule(" 0 0 * * *", async () => {
+    console.log("Checking for tasks due tomorrow");
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const startOfDay = new Date(tomorrow.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(tomorrow.setHours(23, 59, 59, 999));
 
-        const dueTomorrowTasks = await prisma.task.findMany({
-            where: {
-                dueDate: {
-                    gte: startOfDay.toISOString(),
-                    lte: endOfDay.toISOString(),
-                },
-                status: {
-                    not: "Close",
-                },
-            },
-            include: {
-                taskAssignee: true,
-            },
-        });
-
-        dueTomorrowTasks.forEach(task => {
-            if (task.taskAssigneeId) {
-                sendNotificationToUser(task.taskAssigneeId, task.title, "is due tomorrow","Let’s nail it!").catch(console.error);
-            }
-        });
+    const dueTomorrowTasks = await prisma.task.findMany({
+      where: {
+        dueDate: {
+          gte: startOfDay.toISOString(),
+          lte: endOfDay.toISOString(),
+        },
+        status: {
+          not: "Close",
+        },
+      },
+      include: {
+        taskAssignee: true,
+      },
     });
+
+    dueTomorrowTasks.forEach((task) => {
+      if (task.taskAssigneeId) {
+        sendNotificationToUser(
+          task.taskAssigneeId,
+          task.title,
+          "is due tomorrow",
+          "Let’s nail it!"
+        ).catch(console.error);
+      }
+    });
+  });
 };

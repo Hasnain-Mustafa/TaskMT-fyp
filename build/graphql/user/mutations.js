@@ -15,4 +15,6 @@ exports.mutations = `#graphql
     updateProfilePicture(email:String, photoURL: String):User
     generateOAuthToken(email:String!):Token
     subscribe(email: String!): SubscriptionResponse
+    requestPasswordReset(email: String!): String!
+    resetPassword(token: String!, newPassword: String!): String!
     `;
