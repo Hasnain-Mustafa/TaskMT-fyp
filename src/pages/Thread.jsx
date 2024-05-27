@@ -1,13 +1,25 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { getCurrentFormattedTime } from "../utils/utils";
 import { ChatEngine } from "react-chat-engine";
 import { gql } from "@apollo/client";
 import client from "../ApolloClient";
 import { chatNotifications } from "../features/auth/authActions";
+import { useStateContext } from "../contexts/ContextProvider";
 const Thread = () => {
+  const { setActiveMenu, screenSize } = useStateContext(); // Use useStateContext
   const { userInfo } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    // Ensure the sidebar is hidden when this component is mounted
+    setActiveMenu(false);
+
+    return () => {
+      // Ensure the sidebar is shown based on screen size when this component is unmounted
+      setActiveMenu(screenSize > 900);
+    };
+  }, [setActiveMenu, screenSize]);
 
   const pushNotification = async (chatId, message) => {
     const chatMembersUrl = `https://api.chatengine.io/chats/${chatId}/people/`;

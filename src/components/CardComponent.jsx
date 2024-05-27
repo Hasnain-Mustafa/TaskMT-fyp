@@ -97,7 +97,7 @@ const CardComponent = () => {
   ];
 
   return (
-    <div className="bg-black p-4 rounded-xl max-w-xs text-gray-300 shadow-xl">
+    <div className="bg-black p-4 rounded-xl w-[17rem] md:w-[20rem] text-gray-300 shadow-xl">
       <div className="flex justify-between items-center mb-3">
         <h1 className="text-sm font-medium text-white">Overall Information</h1>
         <div className="flex items-center">
@@ -115,7 +115,6 @@ const CardComponent = () => {
         <div className="bg-gray-500 h-6 w-px"></div>
         <div className="flex items-center">
           <div className="font-bold text-3xl text-white px-3 py-1 mr-2">
-            {/* <CountUp maxCount={projectStats.projectsStopped} /> */}
             {projectStats.projectsStopped}
           </div>
           <div className="text-xs">projects are stopped</div>
@@ -125,12 +124,11 @@ const CardComponent = () => {
         {stats.map((stat) => (
           <div
             key={stat.name}
-            className="bg-white rounded-lg shadow-md p-2 text-center"
+            className="bg-white rounded-lg shadow-md p-2 text-center "
           >
             <div className="flex flex-col items-center text-gray-800">
               <FontAwesomeIcon icon={stat.icon} size="lg" className="mb-1" />
-              <div className="text-xl font-bold mb-1">
-                {" "}
+              <div className="text-sm font-bold mb-1">
                 <CountUp maxCount={stat.count} startCount={0} />
               </div>
               <div className="text-xs font-semibold">{stat.name}</div>

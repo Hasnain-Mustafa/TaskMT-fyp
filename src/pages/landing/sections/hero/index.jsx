@@ -7,7 +7,7 @@ import Lottie from "lottie-react";
 export const Hero = () => {
   return (
     <section className="mt-[5rem] p-5 md:p-[7.5rem] text-white relative flex flex-col justify-center flex-1 gap-8 bg-main-dark-bg bg-no-repeat bg-hero-squiggle bg-invert">
-      <div className="flex flex-col items-center gap-8 h-[85vh] p-5 md:max-w-[28.563rem] md:m-auto md:bg-bg-hero-squiggle md:bg-contain bg-no-repeat bg-center ">
+      <div className="flex flex-col items-center gap-8 h-[81vh] md:h-[85vh] p-5 md:max-w-[28.563rem] md:m-auto md:bg-bg-hero-squiggle md:bg-contain bg-no-repeat bg-center ">
         <motion.h1
           {...framer_title}
           className="font-bold leading-snug text-center text-2xl  md:text-4xl"

@@ -155,7 +155,7 @@ const CreateTaskModal = () => {
 
   return (
     <div>
-      {userInfo.isManager && (
+      {userInfo.isManager === "true" && (
         <Button
           onClick={handleOpen}
           component={motion.div}

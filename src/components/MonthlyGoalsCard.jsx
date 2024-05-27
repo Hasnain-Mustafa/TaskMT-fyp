@@ -101,7 +101,7 @@ const MonthlyGoalsCard = () => {
   }, [isEditing]);
 
   return (
-    <div className="bg-black p-5 rounded-xl shadow-md w-[20rem] h-[13rem] relative">
+    <div className="bg-black p-5 rounded-xl shadow-md w-[17rem] md:w-[20rem] h-[13rem] mt-[-10px] lg:mt-0  relative">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-bold text-white">Monthly Goals:</h2>
         <AiOutlineEdit

@@ -14,6 +14,7 @@ import {
   createProject,
   updateProject,
 } from "../features/projects/projectActions";
+
 const projectSchema = z.object({
   title: z.string().min(1, "Project title is required."),
   summary: z.string().min(1, "Project summary is required."),
@@ -22,17 +23,11 @@ const projectSchema = z.object({
   assigneeEmails: z
     .array(z.string())
     .min(1, "At least one assignee email is required."),
-
   status: z.string(), // Assuming status is a string, add validation as needed
   creatorId: z.string(), // Ensure this is required or handled correctly
 });
 
-const CreateProjectsModal = ({
-  handleCloseModal,
-  initialData,
-  // setNewProjectData,
-  // newProjectData,
-}) => {
+const CreateProjectsModal = ({ handleCloseModal, initialData }) => {
   const [email, setEmail] = useState("");
   const [pid, setPid] = useState("");
   const dispatch = useDispatch();
@@ -58,6 +53,7 @@ const CreateProjectsModal = ({
       creatorId: userInfo.id,
     },
   });
+
   // Set form default values when initialData changes
   useEffect(() => {
     if (initialData) {
@@ -69,6 +65,7 @@ const CreateProjectsModal = ({
       }
     }
   }, [initialData, setValue]);
+
   const handleAddProject = async (data) => {
     const action = initialData ? updateProject : createProject;
     try {
@@ -85,23 +82,22 @@ const CreateProjectsModal = ({
             );
             reset();
             handleCloseModal();
-            {
-              !initialData &&
-                res.payload.assigneeIds.forEach((assignee) => {
-                  dispatch(
-                    pushNotifications({
-                      userId: assignee,
-                      notification: [
-                        {
-                          image: "",
-                          message: `You have been assigned to project ${res.payload.title}`,
-                          desc: "Check the project details and start working on your tasks.",
-                          time: getCurrentFormattedTime(),
-                        },
-                      ],
-                    })
-                  );
-                });
+            if (!initialData) {
+              res.payload.assigneeIds.forEach((assignee) => {
+                dispatch(
+                  pushNotifications({
+                    userId: assignee,
+                    notification: [
+                      {
+                        image: "",
+                        message: `You have been assigned to project ${res.payload.title}`,
+                        desc: "Check the project details and start working on your tasks.",
+                        time: getCurrentFormattedTime(),
+                      },
+                    ],
+                  })
+                );
+              });
             }
           }
         }
@@ -141,7 +137,7 @@ const CreateProjectsModal = ({
         animate="visible"
         exit="exit"
         onClick={(e) => e.stopPropagation()}
-        className="rounded-lg border bg-card text-card-foreground shadow-sm w-96 mx-auto bg-white relative"
+        className="rounded-lg border bg-card text-card-foreground shadow-sm w-96 max-h-full mx-auto bg-white relative overflow-y-auto"
         onSubmit={handleSubmit(handleAddProject)}
         onKeyDown={(e) => {
           if (e.key === "Enter") e.preventDefault();

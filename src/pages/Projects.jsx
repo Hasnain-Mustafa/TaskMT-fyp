@@ -141,7 +141,7 @@ const Projects = () => {
   return (
     <div className="p-6 lg:ml-16 xl:ml-0">
       {userInfo.isManager === "true" && (
-        <div className="mb-4">
+        <div className="ml-5 mb-4 mt-12 md:mt-0">
           <Button
             onClick={handleOpenModal}
             component={motion.div}
@@ -159,28 +159,43 @@ const Projects = () => {
           </Button>
         </div>
       )}
-      <div className="flex flex-wrap justify-center lg:justify-start space-y-4 md:space-y-0 md:space-x-4 p-5">
-        <div className="mb-8">
+      <div
+        className={
+          userInfo.isManager === "true"
+            ? `flex flex-wrap justify-center items-center gap-8 lg:justify-start space-y-4 md:space-y-0 md:space-x-4 p-5`
+            : `flex flex-wrap mt-12 md:mt-0 justify-center items-center gap-8 lg:justify-start space-y-4 md:space-y-0 md:space-x-4 p-5`
+        }
+      >
+        <div className="">
           <CardComponent />
         </div>
-        <div className="m-8">
+        <div className="">
           <MonthlyGoalsCard />
         </div>
       </div>
       <div className="mb-4 ml-5 text-2xl font-bold">Projects</div>
-      <div>
+      <div className="grid place-items-center grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {projects.map((project) => (
+          <ProjectCard
+            key={project.id}
+            project={project}
+            onViewDetails={onViewDetails}
+            onDelete={() => openConfirmDialog(project.id)}
+            onEdit={() => handleEditProject(project.id)}
+          />
+        ))}
+      </div>
+      {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 md:gap-[10rem] xl-">
         {projects && projects.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {projects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onViewDetails={onViewDetails}
-                onDelete={() => openConfirmDialog(project.id)}
-                onEdit={() => handleEditProject(project.id)}
-              />
-            ))}
-          </div>
+          projects.map((project) => (
+            <ProjectCard
+              key={project.id}
+              project={project}
+              onViewDetails={onViewDetails}
+              onDelete={() => openConfirmDialog(project.id)}
+              onEdit={() => handleEditProject(project.id)}
+            />
+          ))
         ) : (
           <Typography
             variant="h6"
@@ -199,7 +214,7 @@ const Projects = () => {
             No projects yet!
           </Typography>
         )}
-      </div>
+      </div> */}
 
       <AnimatePresence initial={false}>
         {openModal && (

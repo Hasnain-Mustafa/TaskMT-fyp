@@ -33,7 +33,7 @@ export const Navbar = ({
     },
   };
   return (
-    <nav className=" absolute top-0 left-0 right-0 flex justify-between p-5 m-auto md:justify-start lg:justify-between ">
+    <nav className=" absolute top-0 left-0 right-0 flex justify-between p-5 m-auto">
       <img
         src={Logo}
         alt="TasMT Logo"

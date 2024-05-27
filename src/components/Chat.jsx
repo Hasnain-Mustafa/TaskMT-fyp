@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { MdOutlineCancel } from "react-icons/md";
+import { FaUser } from "react-icons/fa";
 import { Button } from ".";
 import { useStateContext } from "../contexts/ContextProvider";
 import { useNavigate } from "react-router-dom"; // Import useNavigate hook

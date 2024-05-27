@@ -109,6 +109,16 @@ const LoginModal = ({ closeLoginFn }) => {
         userLogin({ email: formData.email, password: formData.password })
       );
       await handleChatEngineLogic(formData);
+      res.then((result) => {
+        if (result && result.meta.requestStatus) {
+          if (result.meta.requestStatus === "rejected") {
+            toast.error(result.payload);
+          } else if (result.meta.requestStatus === "fulfilled") {
+            toast.success(`Happy Tasking, ${result.payload.name}!`);
+            closeLoginFn();
+          }
+        }
+      });
     } catch (error) {
       console.error("Error Logging In", error);
     }

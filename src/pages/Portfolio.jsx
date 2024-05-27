@@ -11,6 +11,7 @@ import {
   Sort,
   Filter,
 } from "@syncfusion/ej2-react-grids";
+import dummyUser from "../data/dummyUser.png";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { useSelector, useDispatch } from "react-redux";
@@ -42,7 +43,7 @@ const Portfolio = () => {
       : {};
 
   // Configure toolbar options based on user's role
-  const toolbarOptions = userInfo.isManager === "true" ? ["Delete"] : [];
+  const toolbarOptions = userInfo.isManager === "true" ? ["Delete"] : null;
   const editing = {
     allowDeleting: userInfo.isManager === "true",
     allowEditing: false,
@@ -114,7 +115,7 @@ const Portfolio = () => {
     }
   };
 
-  const handleToolbarClick = (args) => {
+  const handleToolbarClick = () => {
     dispatch(deleteProjects({ projectIds: selectedRowsData }));
     setSelectedRowsData([]); // Clear the selection after deleting
   };
@@ -155,11 +156,15 @@ const Portfolio = () => {
   const customerGridImage = (props) => {
     return (
       <div className="image flex gap-4 items-center">
-        <img
-          className="rounded-full w-10 h-10"
-          src={props?.assignee?.photoURL}
-          alt="image"
-        />
+        {props?.assignee?.photoURL && props?.assignee?.photoURL !== "" ? (
+          <img
+            className="rounded-full w-10 h-10"
+            src={props?.assignee?.photoURL}
+            alt="image"
+          />
+        ) : (
+          <img className="rounded-full w-10 h-10" src={dummyUser} alt="image" />
+        )}
         <div>
           <p>{props?.assignee?.name}</p>
           <p>{props?.assignee?.email}</p>
@@ -202,6 +207,7 @@ const Portfolio = () => {
       headerText: "Budget",
       width: "100",
       textAlign: "Center",
+      template: (props) => `$${props.budget}`,
     },
     {
       field: "Progress",

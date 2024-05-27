@@ -77,14 +77,28 @@ img#ce-ice-breaker-gif {
 .ce-my-message-sinding-bubble {
   background-color: #111 !important;
 }
+.ce-their-message-bubble {
+  background-color: #e6e6e6 !important;
+}
 
 @media (max-width: 481px) {
   .ce-chat-engine {
     margin-top: 4rem !important;
   }
+  .ce-chat-title svg {
+    fill: #000 !important;
+  }
+  .ce-chat-form-container svg {
+    fill: #fff !important;
+  }
 
   .ce-chat-form-container {
     padding-top: 6rem !important;
+    color: #111;
+  }
+
+  .ce-chat-title-text {
+    color: #111;
   }
   .anticon-close {
     top: 70px !important;
@@ -118,10 +132,15 @@ img#ce-ice-breaker-gif {
   color: black !important;
 }
 /* .ce-default-button, */
-.ce-chat-form-button {
-  /* padding: 0 2rem 0 2rem !important; */
+
+.new-chat-plus-button svg {
   background-color: #333 !important;
   color: white !important;
+}
+.ce-chat-form-button svg {
+  /* padding: 0 2rem 0 2rem !important; */
+  background-color: #333 !important;
+  fill: white !important;
 }
 
 .ce-message-form-input {
