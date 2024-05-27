@@ -35,7 +35,6 @@ export const RoomPage = () => {
   }
 
   const onLeave = async () => {
-    navigate("/");
     window.close();
   };
 
