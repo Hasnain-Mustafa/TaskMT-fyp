@@ -89,6 +89,8 @@ const CreateTaskModal = () => {
   const { projectId } = useParams();
   const isMobile = useMediaQuery("(max-width:600px)");
   const isTablet = useMediaQuery("(max-width:900px)");
+  const currentDate = new Date();
+  const formattedCurrentDate = format(currentDate, "yyyy-MM-dd'T'HH:mm:ss'Z'");
   const [newTask, setNewTask] = useState({
     title: "",
     status: "Open",
@@ -97,7 +99,7 @@ const CreateTaskModal = () => {
     priority: "High",
     taskAssigneeEmail: "",
     dueDate: null,
-    startDate: new Date(),
+    startDate: formattedCurrentDate,
     projectId: projectId,
     taskCreatorId: userInfo.id,
     turnedInAt: "",

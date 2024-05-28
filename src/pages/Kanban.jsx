@@ -280,6 +280,17 @@ const Kanban = () => {
       opacity: !isManager && isClosed ? 0.6 : 1,
     };
 
+    const convertDateFormat = (dateString, timeZoneAbbreviation) => {
+      const dateObj = new Date(dateString);
+      const options = {
+        timeZone: timeZoneAbbreviation,
+        hour12: true,
+        hour: "numeric",
+        minute: "2-digit",
+      };
+      return dateObj.toLocaleString("en-US", options);
+    };
+
     return (
       <div style={cardStyle}>
         <div>
@@ -338,19 +349,9 @@ const Kanban = () => {
                     year: "numeric",
                   })}
                 <br />
-                {data.startDate &&
-                  new Date(data.startDate).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true,
-                  })}
+                {data.startDate && convertDateFormat(data.startDate, "UTC")}
                 {" - "}
-                {data.dueDate &&
-                  new Date(data.dueDate).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true,
-                  })}
+                {data.dueDate && convertDateFormat(data.dueDate, "UTC")}
               </Typography>
             </div>
           </div>
