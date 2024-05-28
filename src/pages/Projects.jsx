@@ -175,17 +175,6 @@ const Projects = () => {
       </div>
       <div className="mb-4 ml-5 text-2xl font-bold">Projects</div>
       <div className="grid place-items-center grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {projects.map((project) => (
-          <ProjectCard
-            key={project.id}
-            project={project}
-            onViewDetails={onViewDetails}
-            onDelete={() => openConfirmDialog(project.id)}
-            onEdit={() => handleEditProject(project.id)}
-          />
-        ))}
-      </div>
-      {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 md:gap-[10rem] xl-">
         {projects && projects.length > 0 ? (
           projects.map((project) => (
             <ProjectCard
@@ -214,7 +203,7 @@ const Projects = () => {
             No projects yet!
           </Typography>
         )}
-      </div> */}
+      </div>
 
       <AnimatePresence initial={false}>
         {openModal && (

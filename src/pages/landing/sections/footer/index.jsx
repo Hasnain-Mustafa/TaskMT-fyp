@@ -92,7 +92,7 @@ export const Footer = () => {
           </div>
           <div className="mt-6 flex items-center">
             <img src={mailIcon} aria-hidden="true" alt="Mail Icon" />
-            <p className="ml-6 text-base">example@taskmt.com</p>
+            <p className="ml-6 text-base">taskmt.site@gmail.com</p>
           </div>
           <div className="mt-10 flex gap-5 text-3xl lg:gap-6 lg:text-4xl transition-all duration-500">
             <a href="#0" title="Facebook">

@@ -8,7 +8,7 @@ export const data = [
     options: [
       "Create unlimited tasks",
       "Set deadlines and priorities",
-      "Categorize tasks by projects or tags",
+      "Categorize tasks by priority",
       "Assign tasks to team members",
     ],
   },
@@ -19,8 +19,8 @@ export const data = [
     options: [
       "Drag and drop tasks across stages",
       "Track task status in real-time",
-      "Collaborate with team members visually",
-      "Customize board layout to fit your workflow",
+      "Collaborate with team members virtually",
+      "Calendar and notification reminders",
     ],
   },
 ];

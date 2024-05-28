@@ -22,7 +22,6 @@ export const RoomPage = () => {
     stageLayout: "grid",
     showStats: false,
   });
-  const navigate = useNavigate();
   const query = new URLSearchParams(useLocation().search);
   const url = query.get("url");
   const token = query.get("token");
@@ -62,22 +61,20 @@ export const RoomPage = () => {
   };
 
   return (
-    <>
-      <div style={{ width: "100vw", height: "90vh" }}>
-        <RoomContainer
-          updateOptions={updateOptions}
-          displayOptions={displayOptions}
-          numParticipants={numParticipants}
-          query={query}
-          url={url}
-          token={token}
-          onConnected={onConnected}
-          onLeave={onLeave}
-          updateParticipantSize={updateParticipantSize}
-          onParticipantDisconnected={onParticipantDisconnected}
-        />
-      </div>
-    </>
+    <div>
+      <RoomContainer
+        updateOptions={updateOptions}
+        displayOptions={displayOptions}
+        numParticipants={numParticipants}
+        query={query}
+        url={url}
+        token={token}
+        onConnected={onConnected}
+        onLeave={onLeave}
+        updateParticipantSize={updateParticipantSize}
+        onParticipantDisconnected={onParticipantDisconnected}
+      />
+    </div>
   );
 };
 
@@ -131,7 +128,7 @@ const RoomContainer = ({
   updateParticipantSize,
   onParticipantDisconnected,
 }) => (
-  <div className="roomContainer !mx-auto md:mt-12 px-4 py-6 max-w-screen-lg">
+  <div className="roomContainer !mx-auto md:mt-12 max-w-screen-lg ">
     <div className="topBar">
       <div className="right">
         <div>

@@ -9,9 +9,15 @@ import {
 const Credits = () => {
   return (
     <div className="dark:text-grayishBlue relative text-center text-xs lg:mt-auto lg:text-sm mt-16 text-white/50">
-      <p className="text-lg">
+      <p className="text-base">
+        Supervised by <br />
+        Dr. Mubbashir Ayub <br />
+        Assistant Professor, UET Taxila
+      </p>
+      <p className="text-base">
         Developed by Eman Binte Kamran & Muhammad Hasnain Mustafa
       </p>
+
       <ul className="px-3 mt-2 flex items-center justify-center gap-x-3 text-lg  [&_a]:transition-all [&_a]:duration-500 hover:[&_a]:text-pink">
         Eman's Links:
         <li>

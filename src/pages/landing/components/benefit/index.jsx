@@ -9,7 +9,7 @@ export const Benefit = ({ info, idx }) => {
   const isDesktop = width > 976;
 
   return (
-    <div className="flex max-w-[30rem] flex-col items-center gap-5 text-center md:flex-row md:text-left lg:flex-col lg:text-center">
+    <div className="flex max-w-[30rem] flex-col items-center gap-5 lg:gap-7 text-center md:flex-row md:text-left lg:flex-col lg:text-center">
       <motion.div
         {...framer_image(idx, isDesktop)}
         className="flex w-[250px] h-[200px] items-center justify-center p-5 rounded-3xl "
