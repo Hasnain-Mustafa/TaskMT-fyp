@@ -70,7 +70,7 @@ const Chat = ({ screenWidth }) => {
           onClick={handleCloseModal} // Add onClick handler here
         />
       </div>
-      <div className="mt-5">
+      <div className=" mt-5 h-[10rem] overflow-y-auto">
         {chats?.map((item) => (
           <div
             key={item.id} // Assuming `item.id` is a unique identifier from your data
@@ -102,16 +102,16 @@ const Chat = ({ screenWidth }) => {
             </div>
           </div>
         ))}
-        <div className="mt-5">
-          <Button
-            color="white"
-            bgColor={currentColor}
-            text="See all messages"
-            borderRadius="9999px"
-            width="full"
-            onClick={handleSeeAllMessages}
-          />
-        </div>
+      </div>
+      <div className="mt-5">
+        <Button
+          color="white"
+          bgColor={currentColor}
+          text="See all messages"
+          borderRadius="9999px"
+          width="full"
+          onClick={handleSeeAllMessages}
+        />
       </div>
     </motion.div>
   );

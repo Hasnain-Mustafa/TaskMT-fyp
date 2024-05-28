@@ -63,7 +63,7 @@ const Notification = ({ screenWidth }) => {
           onClick={handleCloseModal}
         />
       </div>
-      <div className="mt-5">
+      <div className="mt-5 h-[10rem] overflow-y-auto">
         {notifications?.length === 0 ? (
           <div className="flex items-center justify-center py-5">
             <p className="text-gray-500 text-lg dark:text-gray-400">
