@@ -1463,7 +1463,7 @@ export const requestPasswordReset = async ({ email }: { email: string }) => {
     }
 
     const token = JWT.sign({ email }, JWT_SECRET, { expiresIn: "1h" });
-    const resetLink = `http://localhost:3000/reset-password/${token}`;
+    const resetLink = `https://taskmt.live/reset-password/${token}`;
 
     const mailOptions = {
       from: "taskmt.site@gmail.com",
