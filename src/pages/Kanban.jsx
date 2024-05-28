@@ -9,6 +9,7 @@ import {
   ColumnsDirective,
   ColumnDirective,
 } from "@syncfusion/ej2-react-kanban";
+import dummyUser from "../data/dummyUser.png";
 import { Header } from "../components";
 import { useSelector, useDispatch } from "react-redux";
 import CreateTaskModal from "./CreateTaskModal";
@@ -325,11 +326,20 @@ const Kanban = () => {
               marginTop: "8px",
             }}
           >
-            <img
-              className="rounded-full h-8 w-8"
-              src={data.assigneeURL.photoURL}
-              alt="user-profile"
-            />
+            {data?.assigneeURL?.photoURL &&
+            data?.assigneeURL?.photoURL !== "" ? (
+              <img
+                className="rounded-full w-10 h-10"
+                src={data?.assigneeURL?.photoURL}
+                alt="image"
+              />
+            ) : (
+              <img
+                className="rounded-full w-10 h-10"
+                src={dummyUser}
+                alt="image"
+              />
+            )}
             <div>
               <Typography
                 variant="body2"

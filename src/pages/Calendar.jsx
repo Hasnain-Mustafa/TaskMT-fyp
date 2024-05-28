@@ -37,9 +37,9 @@ const Calendar = () => {
     scheduleObj.dataBind();
   };
 
-  const onDragStart = (arg) => {
-    arg.navigation.enable = true;
-  };
+  // const onDragStart = (arg) => {
+  //   arg.navigation.enable = true;
+  // };
 
   const { data: tasksData, isFetching } =
     userInfo.isManager == "true"
@@ -63,7 +63,6 @@ const Calendar = () => {
             selectFromResult: (data) => data,
           }
         );
-
   useEffect(() => {
     const actionPayload =
       userInfo.isManager == "true"
@@ -86,6 +85,7 @@ const Calendar = () => {
             };
           })
         );
+        console.log(tasksWithDetails);
         dispatch(setCalendarData(tasksWithDetails));
       };
 
@@ -115,11 +115,20 @@ const Calendar = () => {
     }
     return data.getMemberById;
   };
-
   const onPopupOpen = (args) => {
-    // Prevent the editor and quick info popups from opening
-    if (args.type === "Editor" || args.type === "QuickInfo") {
-      args.cancel = true; // Prevent the editor and quick info from opening
+    if (args.type === "Editor" || args.type === "Add") {
+      args.cancel = true; // Prevent the editor from opening when clicking on an empty cell
+    }
+    if (args.type === "QuickInfo") {
+      // Use a timeout to ensure the DOM is fully loaded before attempting to modify it
+      setTimeout(() => {
+        const deleteButton = document.querySelector(
+          ".e-delete.e-control.e-btn.e-lib.e-flat.e-round.e-small.e-icon-btn"
+        );
+        if (deleteButton) {
+          deleteButton.remove(); // Removes the delete button from the DOM entirely
+        }
+      }, 10);
     }
   };
 
@@ -132,7 +141,7 @@ const Calendar = () => {
         ref={(schedule) => setScheduleObj(schedule)}
         selectedDate={new Date()}
         eventSettings={{ dataSource: calendarData }}
-        dragStart={onDragStart}
+        // dragStart={onDragStart}
       >
         <ViewsDirective>
           {["Day", "Week", "WorkWeek", "Month", "Agenda"].map((item) => (
@@ -150,9 +159,7 @@ const Calendar = () => {
             dataSource={calendarData}
           ></ResourceDirective>
         </ResourcesDirective>
-        <Inject
-          services={[Day, Week, WorkWeek, Month, Agenda, Resize, DragAndDrop]}
-        />
+        <Inject services={[Day, Week, WorkWeek, Month, Agenda, Resize]} />
       </ScheduleComponent>
       <PropertyPane>
         <table style={{ width: "100%", background: "white" }}>
