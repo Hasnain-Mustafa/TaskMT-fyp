@@ -27,7 +27,8 @@ const Thread = () => {
       const response = await fetch(chatMembersUrl, {
         method: "GET",
         headers: {
-          "Project-ID": "814c164f-2d76-40df-8c21-342a264f025e",
+          // "Project-ID": "814c164f-2d76-40df-8c21-342a264f025e",
+          "Project-ID": "27fdb2da-b2a0-4d5f-bd6f-8055392d8517",
           "User-Name": userInfo.name,
           "User-Secret": userInfo.name,
         },
@@ -85,7 +86,8 @@ const Thread = () => {
   return (
     <div>
       <ChatEngine
-        projectID="814c164f-2d76-40df-8c21-342a264f025e"
+        // projectID="814c164f-2d76-40df-8c21-342a264f025e"
+        projectID="27fdb2da-b2a0-4d5f-bd6f-8055392d8517"
         userName={userInfo.name}
         userSecret={userInfo.name}
         onNewMessage={(chatId, message) => pushNotification(chatId, message)}

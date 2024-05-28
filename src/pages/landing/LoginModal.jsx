@@ -136,7 +136,8 @@ const LoginModal = ({ closeLoginFn }) => {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "PRIVATE-KEY": "21ee82bb-40cc-4093-b1e1-a473a021f4c3",
+          // "PRIVATE-KEY": "21ee82bb-40cc-4093-b1e1-a473a021f4c3",
+          "PRIVATE-KEY": "2930b4f1-2f6c-4ed8-b512-f47ce66d941e",
         },
         body: JSON.stringify(chatEngineUser),
       });
